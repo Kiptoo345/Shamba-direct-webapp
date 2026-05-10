@@ -1,0 +1,233 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Marketplace — Shamba Direct</title>
+<link rel="stylesheet" type="text/css" href="CSS/shared.css"/>
+<link rel="stylesheet" type="text/css" href="CSS/marketplace.css"/>
+<link rel="shortcut icon" type="Image/jpeg" href="CSS/images/favicon.jpg"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="index.html">
+      <div class="logo-icon">🌱</div>
+      <div>
+        <div class="logo-text">Shamba Direct</div>
+        <div class="logo-sub">Kenya's Farm Marketplace</div>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+      <a class="nav-link active" href="marketplace.html">Marketplace</a>
+      <a class="nav-link" href="how-it-works.html">How It Works</a>
+      <a class="nav-link" href="contact.html">About & Contact</a>
+      <a class="btn-nav-login" href="dashboard.html">Dashboard</a>
+      <a class="btn-nav-register" href="register.html">Register Free</a>
+    </div>
+  </div>
+</nav>
+
+<!-- MARKETPLACE HEADER -->
+<div class="mp-header">
+  <div class="container">
+    <h1>Kenya's Fresh Produce Marketplace</h1>
+    <p>Browse verified listings from farmers across all 47 counties. Filter by crop, county, and quantity.</p>
+    <div class="mp-search-bar">
+      <input type="text" placeholder="Search by crop, county, or farmer name…"/>
+      <button>Search</button>
+    </div>
+  </div>
+</div>
+
+<!-- MARKETPLACE LAYOUT -->
+<div class="mp-layout">
+  <!-- Filters Sidebar -->
+  <aside class="mp-filters">
+    <div class="filter-title">Filter Listings</div>
+    <div class="filter-group">
+      <div class="filter-group-title">Crop Type</div>
+      <label class="filter-option"><input type="checkbox" checked/> All Crops</label>
+      <label class="filter-option"><input type="checkbox"/> Vegetables</label>
+      <label class="filter-option"><input type="checkbox"/> Cereals & Grains</label>
+      <label class="filter-option"><input type="checkbox"/> Fruits</label>
+      <label class="filter-option"><input type="checkbox"/> Legumes</label>
+      <label class="filter-option"><input type="checkbox"/> Roots & Tubers</label>
+    </div>
+    <div class="filter-group">
+      <div class="filter-group-title">County</div>
+      <label class="filter-option"><input type="checkbox" checked/> All Counties</label>
+      <label class="filter-option"><input type="checkbox"/> Nairobi</label>
+      <label class="filter-option"><input type="checkbox"/> Kirinyaga</label>
+      <label class="filter-option"><input type="checkbox"/> Uasin Gishu</label>
+      <label class="filter-option"><input type="checkbox"/> Nakuru</label>
+      <label class="filter-option"><input type="checkbox"/> Meru</label>
+      <label class="filter-option"><input type="checkbox"/> Kajiado</label>
+      <label class="filter-option"><input type="checkbox"/> Nyandarua</label>
+    </div>
+    <div class="filter-group">
+      <div class="filter-group-title">Min. Quantity (kg)</div>
+      <select class="form-input form-select" style="margin-bottom:0;">
+        <option>Any</option>
+        <option>50 kg+</option>
+        <option>200 kg+</option>
+        <option>500 kg+</option>
+        <option>1,000 kg+</option>
+      </select>
+    </div>
+    <div class="filter-group">
+      <div class="filter-group-title">Verified Only</div>
+      <label class="filter-option"><input type="checkbox" checked/> ✅ Show verified farmers only</label>
+    </div>
+  </aside>
+
+  <!-- Results -->
+  <div>
+    <div class="mp-results-header">
+      <span class="mp-results-count">Showing 24 listings across Kenya</span>
+      <select class="mp-sort">
+        <option>Sort: Newest First</option>
+        <option>Price: Low to High</option>
+        <option>Price: High to Low</option>
+        <option>Quantity: Largest First</option>
+      </select>
+    </div>
+    <div class="produce-grid">
+      <div class="produce-card">
+        <div class="produce-img">
+          <div class="produce-img-emoji">🍅</div>
+          <span class="produce-badge">✅ Verified</span>
+        </div>
+        <div class="produce-body">
+          <div class="produce-name">Roma Tomatoes</div>
+          <div class="produce-farmer">👤 James Mwangi</div>
+          <div class="produce-meta"><span class="produce-price">KES 45/kg</span><span class="produce-qty">800 kg</span></div>
+          <div class="produce-county">📍 Kirinyaga • Harvested 2 days ago</div>
+          <button class="produce-btn" style="margin-top:1rem;">Contact Farmer</button>
+        </div>
+      </div>
+      <div class="produce-card">
+        <div class="produce-img">
+          <div class="produce-img-emoji">🌽</div>
+          <span class="produce-badge">✅ Verified</span>
+        </div>
+        <div class="produce-body">
+          <div class="produce-name">Grade A Maize</div>
+          <div class="produce-farmer">👤 Grace Achieng</div>
+          <div class="produce-meta"><span class="produce-price">KES 32/kg</span><span class="produce-qty">3,500 kg</span></div>
+          <div class="produce-county">📍 Uasin Gishu • Post-harvest dry</div>
+          <button class="produce-btn" style="margin-top:1rem;">Contact Farmer</button>
+        </div>
+      </div>
+      <div class="produce-card">
+        <div class="produce-img">
+          <div class="produce-img-emoji">🥔</div>
+          <span class="produce-badge">✅ Verified</span>
+        </div>
+        <div class="produce-body">
+          <div class="produce-name">Shangi Potatoes</div>
+          <div class="produce-farmer">👤 Peter Kamau</div>
+          <div class="produce-meta"><span class="produce-price">KES 28/kg</span><span class="produce-qty">1,200 kg</span></div>
+          <div class="produce-county">📍 Nyandarua • Washed & sorted</div>
+          <button class="produce-btn" style="margin-top:1rem;">Contact Farmer</button>
+        </div>
+      </div>
+      <div class="produce-card">
+        <div class="produce-img">
+          <div class="produce-img-emoji">🧅</div>
+          <span class="produce-badge">✅ Verified</span>
+        </div>
+        <div class="produce-body">
+          <div class="produce-name">Red Onions</div>
+          <div class="produce-farmer">👤 Fatuma Hassan</div>
+          <div class="produce-meta"><span class="produce-price">KES 60/kg</span><span class="produce-qty">600 kg</span></div>
+          <div class="produce-county">📍 Kajiado • Dry-cured</div>
+          <button class="produce-btn" style="margin-top:1rem;">Contact Farmer</button>
+        </div>
+      </div>
+      <div class="produce-card">
+        <div class="produce-img">
+          <div class="produce-img-emoji">🥬</div>
+          <span class="produce-badge">✅ Verified</span>
+        </div>
+        <div class="produce-body">
+          <div class="produce-name">Sukuma Wiki (Kale)</div>
+          <div class="produce-farmer">👤 Mary Njoroge</div>
+          <div class="produce-meta"><span class="produce-price">KES 20/kg</span><span class="produce-qty">400 kg</span></div>
+          <div class="produce-county">📍 Kiambu • Freshly cut</div>
+          <button class="produce-btn" style="margin-top:1rem;">Contact Farmer</button>
+        </div>
+      </div>
+      <div class="produce-card">
+        <div class="produce-img">
+          <div class="produce-img-emoji">🫘</div>
+          <span class="produce-badge">✅ Verified</span>
+        </div>
+        <div class="produce-body">
+          <div class="produce-name">Dry Beans (Mwitemania)</div>
+          <div class="produce-farmer">👤 David Otieno</div>
+          <div class="produce-meta"><span class="produce-price">KES 120/kg</span><span class="produce-qty">950 kg</span></div>
+          <div class="produce-county">📍 Meru • Sun-dried</div>
+          <button class="produce-btn" style="margin-top:1rem;">Contact Farmer</button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-main">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <div class="footer-logo-icon">🌱</div>
+          <div class="footer-logo-text">Shamba Direct</div>
+        </div>
+        <p>Connecting Kenya's farms directly to companies, supermarkets, and restaurants. No brokers. Fair prices. Better livelihoods.</p>
+        <div class="social-links">
+          <a class="social-btn" href="#" title="Facebook">f</a>
+          <a class="social-btn" href="#" title="Instagram">📷</a>
+          <a class="social-btn" href="#" title="Twitter/X">𝕏</a>
+          <a class="social-btn" href="#" title="YouTube">▶</a>
+        </div>
+      </div>
+      <div>
+        <div class="footer-col-title">Quick Links</div>
+        <a class="footer-link" href="index.html">Home</a>
+        <a class="footer-link" href="marketplace.html">Marketplace</a>
+        <a class="footer-link" href="how-it-works.html">How It Works</a>
+        <a class="footer-link" href="contact.html">About & Contact</a>
+      </div>
+      <div>
+        <div class="footer-col-title">For Farmers</div>
+        <a class="footer-link" href="register.html">Register Free</a>
+        <a class="footer-link" href="dashboard.html">Post Produce</a>
+        <a class="footer-link" href="how-it-works.html">How It Works</a>
+        <a class="footer-link" href="how-it-works.html">FAQ</a>
+      </div>
+      <div>
+        <div class="footer-col-title">Contact Us</div>
+        <div class="footer-contact-item"><span class="footer-contact-icon">📞</span> +254 700 123 456</div>
+        <div class="footer-contact-item"><span class="footer-contact-icon">✉️</span> hello@shambadirect.co.ke</div>
+        <div class="footer-contact-item"><span class="footer-contact-icon">📍</span> Ngong Road, Nairobi</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-bottom-inner">
+      <div class="footer-bottom-left">© 2025 Shamba Direct Ltd. All rights reserved. Registered in Kenya.</div>
+      <div class="footer-bottom-links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Use</a>
+        <a href="#">Cookie Policy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+</body>
+</html>
