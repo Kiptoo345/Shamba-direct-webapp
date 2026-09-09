@@ -1,0 +1,203 @@
+/* Dashboard Page Styles */
+
+.dash-layout { 
+  display: grid; 
+  grid-template-columns: 220px 1fr; 
+  min-height: calc(100vh - 68px); 
+}
+
+.dash-sidebar { 
+  background: var(--green-dark); 
+  padding: 2rem 1.25rem; 
+}
+
+.dash-user { 
+  text-align: center; 
+  margin-bottom: 2rem; 
+}
+
+.dash-avatar {
+  width: 64px; height: 64px; 
+  border-radius: 50%;
+  background: var(--gold); 
+  color: var(--green-dark);
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  display: flex; align-items: center;
+  justify-content: center;
+  margin: 0 auto 0.75rem;
+}
+
+.dash-user-name { 
+  color: #fff; font-weight: 700; 
+  font-size: 0.95rem; 
+}
+
+.dash-user-role { 
+  color: rgba(255,255,255,0.6); 
+  font-size: 0.78rem; 
+}
+
+.dash-nav-item {
+  display: flex; 
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.7rem 0.9rem; 
+  border-radius: 8px;
+  color: rgba(255,255,255,0.7); 
+  font-size: 0.88rem; font-weight: 600;
+  cursor: pointer; margin-bottom: 0.25rem; 
+  transition: all 0.2s;
+  text-decoration: none;
+}
+
+.dash-nav-item:hover { 
+  background: rgba(255,255,255,0.12); 
+  color: #fff; 
+}
+
+.dash-nav-icon { 
+  font-size: 1.1rem; 
+}
+
+.dash-main { 
+  padding: 2rem; 
+  background: var(--cream); 
+}
+
+.dash-header { 
+  margin-bottom: 2rem; 
+}
+
+.dash-header h2 { 
+  font-family: var(--font-display); 
+  font-size: 1.8rem; 
+  color: var(--green-dark); 
+}
+
+.dash-header p { 
+  color: var(--text-muted); 
+  font-size: 0.9rem; 
+}
+
+.dash-metrics { 
+  display: grid; 
+  grid-template-columns: repeat(4,1fr); 
+  gap: 1.25rem; 
+  margin-bottom: 2rem; 
+}
+
+.metric-card { 
+  background: #fff; 
+  border-radius: var(--radius); 
+  border: 1px solid var(--border); 
+  padding: 1.25rem; 
+}
+
+.metric-label { 
+  font-size: 0.8rem; 
+  font-weight: 700; 
+  text-transform: uppercase; 
+  letter-spacing: 0.06em; 
+  color: var(--text-muted); 
+  margin-bottom: 0.4rem; 
+}
+
+.metric-value { 
+  font-family: var(--font-display); 
+  font-size: 1.9rem; 
+  color: var(--green-dark); 
+}
+
+.metric-sub { 
+  font-size: 0.78rem; 
+  color: var(--green); 
+  font-weight: 600; 
+  margin-top: 0.2rem; 
+}
+
+.dash-table-card { 
+  background: #fff; 
+  border-radius: var(--radius); 
+  border: 1px solid var(--border); 
+  padding: 1.5rem; 
+  margin-bottom: 1.5rem; 
+}
+
+.dash-table-title { 
+  font-weight: 800; 
+  font-size: 1rem; 
+  color: var(--text); 
+  margin-bottom: 1.25rem; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+}
+
+.dash-table { 
+  width: 100%; 
+  border-collapse: collapse; 
+  font-size: 0.88rem; 
+}
+
+.dash-table th { 
+  text-align: left; 
+  padding: 0.6rem 0.75rem; 
+  font-size: 0.75rem; 
+  text-transform: uppercase; 
+  letter-spacing: 0.06em; 
+  color: var(--text-muted); 
+  border-bottom: 1px solid var(--border); 
+}
+
+.dash-table td { 
+  padding: 0.85rem 0.75rem; 
+  border-bottom: 1px solid var(--border); 
+}
+
+.dash-table tr:last-child td { 
+  border-bottom: none; 
+}
+
+.status-pill { 
+  padding: 0.2rem 0.7rem; 
+  border-radius: 20px; 
+  font-size: 0.75rem; 
+  font-weight: 700; 
+}
+
+.status-confirmed { 
+  background: #E8F5EA; 
+  color: var(--green); 
+}
+
+.status-pending { 
+  background: #FEF3DC;
+  color: #B7700D; 
+}
+
+.status-delivered { 
+  background: #E3F2FD; 
+  color: #1565C0; 
+}
+
+.post-btn { 
+  background: var(--green); 
+  color: #fff; border: none; 
+  padding: 0.5rem 1.1rem; 
+  border-radius: 8px; 
+  font-family: var(--font-body); 
+  font-weight: 700; 
+  font-size: 0.82rem; 
+  cursor: pointer; 
+}
+
+/* Dashboard responsive */
+@media (max-width: 900px) {
+  .dash-layout { 
+    grid-template-columns: 1fr; 
+  }
+  .dash-metrics { 
+    grid-template-columns: 1fr 1fr; 
+  }
+}
