@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 # Shamba Direct — Full Stack (React + Express + MySQL)
 
 Kenya's Farmer-to-Company Marketplace. This project was converted from a
@@ -84,23 +83,3 @@ The app opens on `http://localhost:3000` and talks to the API via
 
 See `server/sql/schema.sql` for full column definitions, foreign keys, and
 seed rows.
-=======
-1.
-## List things app stores
- - User name 
- - User role
- - Market price
- - Farmer Rating
- - Headquaters
- - Total Earnings
- - Farmer Rating
-
-2. Read
-update 
-3.Govt ID
-phone number.
-
-4. Expected freshness is ∼5 minutes.Source updates every 1 minute
-Our fetcher runs every 5 minutes via cronWe cache for 60 seconds in Redis
-So in the worst case, user sees data that is 6 minutes old. We expose this with a fetched_at timestamp."
->>>>>>> ec6d04e132ccdf0a9c96429713bd9eaedb8075a1

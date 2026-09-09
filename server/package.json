@@ -1,15 +1,9 @@
 {
   "name": "server",
   "version": "1.0.0",
-<<<<<<< HEAD
   "description": "Shamba Direct API — Express + MySQL backend",
   "main": "index.js",
   "scripts": {
-=======
-  "description": "",
-  "main": "index.js",
- "scripts": {
->>>>>>> ec6d04e132ccdf0a9c96429713bd9eaedb8075a1
     "start": "node index.js",
     "dev": "nodemon index.js"
   },
@@ -18,10 +12,7 @@
   "license": "ISC",
   "type": "commonjs",
   "dependencies": {
-<<<<<<< HEAD
     "bcryptjs": "^2.4.3",
-=======
->>>>>>> ec6d04e132ccdf0a9c96429713bd9eaedb8075a1
     "cors": "^2.8.6",
     "dotenv": "^17.4.2",
     "express": "^5.2.1",

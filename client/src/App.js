@@ -1,4 +1,3 @@
-<<<<<<< HEAD
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import Navbar from './components/Navbar';
 import Footer from './components/Footer';
@@ -33,17 +32,3 @@ function App() {
 }
 
 export default App;
-=======
-import ProductsTable from './ProductsTable';
-
-function App() {
-  return (
-    <div>
-      <h1>Shamba Direct — Products</h1>
-      <ProductsTable />
-    </div>
-  );
-}
-
-export default App;
->>>>>>> ec6d04e132ccdf0a9c96429713bd9eaedb8075a1
