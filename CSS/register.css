@@ -1,0 +1,86 @@
+/* ===================== REGISTER PAGE CSS ===================== */
+
+/* Page Layout */
+.reg-page {
+  background: var(--warm-white);
+  min-height: 100vh;
+  padding: 4rem 2rem;
+}
+
+.reg-container {
+  margin: 0 auto;
+  max-width: 680px;
+}
+
+/* Header Section */
+.reg-header {
+  margin-bottom: 2.5rem;
+  text-align: center;
+}
+
+/* Tabs Section */
+.reg-tabs {
+  background: var(--border);
+  border-radius: var(--radius);
+  margin-bottom: 2rem;
+  padding: 4px;
+}
+
+.reg-tab {
+  background: none;
+  border: none;
+  border-radius: 9px;
+  color: var(--text-muted);
+  cursor: pointer;
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 0.95rem;
+  font-weight: 700;
+  padding: 0.7rem;
+  text-align: center;
+  transition: all 0.2s;
+}
+
+.reg-tab.active {
+  background: var(--green);
+  color: #fff;
+}
+
+/* Form Section */
+.reg-form {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  padding: 2.5rem;
+}
+
+.form-hidden {
+  display: none;
+}
+
+/* Benefits Section */
+.benefits-list {
+  background: var(--green-light);
+  border-radius: var(--radius);
+  margin-bottom: 2rem;
+  padding: 1.5rem;
+}
+
+.benefit-item {
+  align-items: flex-start;
+  display: flex;
+  font-size: 0.9rem;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.benefit-item:last-child {
+  margin-bottom: 0;
+}
+
+.benefit-check {
+  color: var(--green);
+  flex-shrink: 0;
+  font-size: 1.1rem;
+  margin-top: 1px;
+}

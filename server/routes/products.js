@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
+<<<<<<< HEAD
 // -----------------------------------------------------------------------
 // GET /api/products  (SELECT — supports optional filters used by the
 // Marketplace and Dashboard pages)
@@ -28,6 +29,12 @@ router.get('/', async (req, res) => {
        ORDER BY p.created_at DESC`,
       params
     );
+=======
+// GET all products (for Marketplace/Dashboard)
+router.get('/', async (req, res) => {
+  try {
+    const [products] = await db.query('SELECT * FROM products');
+>>>>>>> ec6d04e132ccdf0a9c96429713bd9eaedb8075a1
     res.json(products);
   } catch (error) {
     console.error('Error fetching products:', error);
@@ -35,6 +42,7 @@ router.get('/', async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 // -----------------------------------------------------------------------
 // GET /api/products/:id  (SELECT single + increments view count)
 // -----------------------------------------------------------------------
@@ -122,3 +130,21 @@ router.delete('/:id', async (req, res) => {
 });
 
 module.exports = router;
+=======
+// POST a new product (for Adding Inventory)
+router.post('/', async (req, res) => {
+  const { name, price, quantity, category } = req.body;
+  try {
+    const [result] = await db.query(
+      'INSERT INTO products (name, price, quantity, category) VALUES (?, ?, ?, ?)',
+      [name, price, quantity, category]
+    );
+    res.status(201).json({ message: 'Product added successfully', id: result.insertId });
+  } catch (error) {
+    console.error('Error adding product:', error);
+    res.status(500).json({ error: 'Failed to add product' });
+  }
+});
+
+module.exports = router;
+>>>>>>> ec6d04e132ccdf0a9c96429713bd9eaedb8075a1

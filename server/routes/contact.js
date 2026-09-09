@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
+<<<<<<< HEAD
 // POST /api/contact  (INSERT — "About & Contact" page form)
 router.post('/', async (req, res) => {
   const { name, contactInfo, subject, message } = req.body;
@@ -12,6 +13,15 @@ router.post('/', async (req, res) => {
     const [result] = await db.query(
       'INSERT INTO contact_messages (name, contact_info, subject, message) VALUES (?, ?, ?, ?)',
       [name, contactInfo, subject || null, message]
+=======
+// POST Submit Contact Inquiry
+router.post('/', async (req, res) => {
+  const { name, email, message } = req.body;
+  try {
+    const [result] = await db.query(
+      'INSERT INTO contact_messages (name, email, message) VALUES (?, ?, ?)',
+      [name, email, message]
+>>>>>>> ec6d04e132ccdf0a9c96429713bd9eaedb8075a1
     );
     res.status(201).json({ message: 'Inquiry submitted successfully', messageId: result.insertId });
   } catch (error) {
@@ -20,6 +30,7 @@ router.post('/', async (req, res) => {
   }
 });
 
+<<<<<<< HEAD
 // GET /api/contact  (SELECT — admin inbox view)
 router.get('/', async (req, res) => {
   try {
@@ -45,3 +56,6 @@ router.delete('/:id', async (req, res) => {
 });
 
 module.exports = router;
+=======
+module.exports = router;
+>>>>>>> ec6d04e132ccdf0a9c96429713bd9eaedb8075a1

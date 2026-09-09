@@ -1,0 +1,143 @@
+/* ===================== MARKETPLACE PAGE CSS ===================== */
+
+/* Header Section */
+.mp-header {
+  background: var(--green-dark);
+  padding: 3rem 2rem;
+}
+
+.mp-header h1 {
+  color: #fff;
+  font-family: var(--font-display);
+  font-size: 2.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.mp-header p {
+  color: rgba(255, 255, 255, 0.75);
+}
+
+/* Search Bar Section */
+.mp-search-bar {
+  display: flex;
+  gap: 0.75rem;
+  margin-top: 1.5rem;
+  max-width: 600px;
+}
+
+.mp-search-bar input {
+  border: none;
+  border-radius: var(--radius-sm);
+  flex: 1;
+  font-family: var(--font-body);
+  font-size: 1rem;
+  outline: none;
+  padding: 0.8rem 1.25rem;
+}
+
+.mp-search-bar button {
+  background: var(--gold);
+  border: none;
+  border-radius: var(--radius-sm);
+  color: #fff;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-weight: 700;
+  padding: 0.8rem 1.5rem;
+}
+
+/* Layout Section */
+.mp-layout {
+  display: grid;
+  gap: 2rem;
+  grid-template-columns: 240px 1fr;
+  margin: 0 auto;
+  max-width: 1200px;
+  padding: 2rem;
+}
+
+/* Filters Section */
+.mp-filters {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  height: fit-content;
+  padding: 1.5rem;
+  position: sticky;
+  top: 80px;
+}
+
+.filter-title {
+  color: var(--text);
+  font-size: 0.9rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  margin-bottom: 1rem;
+  text-transform: uppercase;
+}
+
+.filter-group {
+  margin-bottom: 1.5rem;
+}
+
+.filter-group-title {
+  color: var(--text-muted);
+  font-size: 0.82rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.6rem;
+  text-transform: uppercase;
+}
+
+.filter-option {
+  align-items: center;
+  cursor: pointer;
+  display: flex;
+  font-size: 0.88rem;
+  gap: 0.5rem;
+  margin-bottom: 0.4rem;
+}
+
+.filter-option input {
+  accent-color: var(--green);
+}
+
+.filter-range {
+  accent-color: var(--green);
+  width: 100%;
+}
+
+/* Results Section */
+.mp-results-header {
+  align-items: center;
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 1.5rem;
+}
+
+.mp-results-count {
+  color: var(--text-muted);
+  font-size: 0.9rem;
+  font-weight: 600;
+}
+
+.mp-sort {
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  cursor: pointer;
+  font-family: var(--font-body);
+  font-size: 0.88rem;
+  outline: none;
+  padding: 0.5rem 1rem;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+  .mp-layout {
+    grid-template-columns: 1fr;
+  }
+
+  .mp-filters {
+    position: static;
+  }
+}

@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>How It Works — Shamba Direct</title>
+<link rel="stylesheet" type="text/css" href="CSS/shared.css"/>
+<link rel="stylesheet" type="text/css" href="CSS/how-it-works.css"/>
+<link rel="shortcut icon" type="Image/jpeg" href="images/favicon.jpg"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="index.html">
+      <div class="logo-icon">🌱</div>
+      <div>
+        <div class="logo-text">Shamba Direct</div>
+        <div class="logo-sub">Kenya's Farm Marketplace</div>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+      <a class="nav-link" href="marketplace.html">Marketplace</a>
+      <a class="nav-link active" href="how-it-works.html">How It Works</a>
+      <a class="nav-link" href="contact.html">About & Contact</a>
+      <a class="btn-nav-login" href="dashboard.html">Dashboard</a>
+      <a class="btn-nav-register" href="register.html">Register Free</a>
+    </div>
+  </div>
+</nav>
+
+<!-- HIW HERO -->
+<div class="hiw-hero">
+  <h1>How Shamba Direct Works</h1>
+  <p>Simple, transparent, and designed for every Kenyan farmer — whether you have a smartphone or not.</p>
+</div>
+
+<!-- STEPS -->
+<section class="section" style="background:#fff;">
+  <div class="container">
+    <div class="hiw-tabs-outer">
+      <button class="hiw-tab active" id="hiw-tab-farmer" onclick="switchHiwTab('farmer')">🌾 For Farmers</button>
+      <button class="hiw-tab" id="hiw-tab-company" onclick="switchHiwTab('company')">🏢 For Companies</button>
+    </div>
+
+    <!-- Farmer Steps -->
+    <div class="hiw-steps" id="hiw-content-farmer">
+      <div class="hiw-step">
+        <div class="hiw-step-num">1</div>
+        <div class="hiw-step-content">
+          <h3>Register with Your Phone Number</h3>
+          <p>Create a free account using your phone number or email. Provide your county, farm size, and main crops. Your account is verified within 24 hours using your National ID. Works on any internet-enabled phone.</p>
+        </div>
+      </div>
+      <div class="hiw-step">
+        <div class="hiw-step-num">2</div>
+        <div class="hiw-step-content">
+          <h3>Post Your Produce Listing</h3>
+          <p>Take a photo of your harvest and upload it. Set your price per kg, total quantity available, and your earliest delivery date. Listings go live immediately and are visible to all verified buyers in your region.</p>
+        </div>
+      </div>
+      <div class="hiw-step">
+        <div class="hiw-step-num">3</div>
+        <div class="hiw-step-content">
+          <h3>Receive Enquiries from Buyers</h3>
+          <p>Companies and restaurants will contact you directly through the platform. Chat, agree on final price and logistics. You can negotiate — the buyer sees your listed price as a starting point.</p>
+        </div>
+      </div>
+      <div class="hiw-step">
+        <div class="hiw-step-num">4</div>
+        <div class="hiw-step-content">
+          <h3>Confirm Order & Arrange Delivery</h3>
+          <p>Once a buyer confirms, you arrange delivery or farm pickup. Many buyers organize their own transport — especially for large orders. Shamba Direct provides a logistics partner directory at no extra cost.</p>
+        </div>
+      </div>
+      <div class="hiw-step">
+        <div class="hiw-step-num">5</div>
+        <div class="hiw-step-content">
+          <h3>Receive Payment Directly via M-Pesa</h3>
+          <p>Payment is sent to your M-Pesa number directly. You can request upfront payment or 50% deposit. Shamba Direct holds a 3% platform fee only — the rest goes to you, immediately. No waiting weeks for money.</p>
+        </div>
+      </div>
+    </div>
+
+    <!-- Company Steps -->
+    <div class="hiw-steps form-hidden" id="hiw-content-company">
+      <div class="hiw-step">
+        <div class="hiw-step-num">1</div>
+        <div class="hiw-step-content">
+          <h3>Register Your Company</h3>
+          <p>Create a verified buyer account with your company name, KRA PIN, and contact details. Verification takes 24–48 hours. Once verified, you're marked as a trusted buyer — farmers prioritize verified buyers.</p>
+        </div>
+      </div>
+      <div class="hiw-step">
+        <div class="hiw-step-num">2</div>
+        <div class="hiw-step-content">
+          <h3>Browse the Marketplace</h3>
+          <p>Search by crop type, county, quantity, and price. Filter by verified farmers only. See full farmer profiles including ratings, past transaction history, and photos of the produce.</p>
+        </div>
+      </div>
+      <div class="hiw-step">
+        <div class="hiw-step-num">3</div>
+        <div class="hiw-step-content">
+          <h3>Contact Farmer & Negotiate</h3>
+          <p>Send an enquiry directly to the farmer. Discuss quantity, delivery schedule, and price. All communication is logged on the platform for transparency and dispute resolution.</p>
+        </div>
+      </div>
+      <div class="hiw-step">
+        <div class="hiw-step-num">4</div>
+        <div class="hiw-step-content">
+          <h3>Confirm Order & Arrange Logistics</h3>
+          <p>Confirm the order on the platform. Arrange pickup from the farm or request delivery. Our partner logistics companies can be booked through the platform for counties within 200km of Nairobi.</p>
+        </div>
+      </div>
+      <div class="hiw-step">
+        <div class="hiw-step-num">5</div>
+        <div class="hiw-step-content">
+          <h3>Receive Fresh Produce & Build Relationships</h3>
+          <p>Once satisfied with the produce, confirm delivery on the platform. Rate the farmer. Many buyers set up recurring orders — building a direct, long-term supply chain without any broker.</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FAQ -->
+<section class="section faq-section">
+  <div class="container-sm">
+    <div style="text-align:center;margin-bottom:2.5rem;">
+      <div class="section-label">Common Questions</div>
+      <h2 class="section-title">Frequently Asked Questions</h2>
+    </div>
+    <div class="faq-item open">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>Is it really free to register as a farmer?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-a">Yes, completely free. There are no registration fees, no monthly charges, and no subscription. Shamba Direct earns a small 3% platform fee only when you successfully complete a sale. If you don't sell, you pay nothing.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>How do I receive payment?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-a">Payments are sent directly to your M-Pesa number. You can negotiate with buyers for upfront payment, 50% deposit before delivery, or payment on delivery. Shamba Direct facilitates the transaction but the money goes to you directly.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>What if I don't have a smartphone?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-a">You can use Shamba Direct on any internet-enabled phone using our mobile website. We also have SMS-based listing submission — contact our support line and a Shamba Direct agent will post your listing for you.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>What happens if there is a dispute over quality?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-a">All listings require photos of the produce at time of posting. We have a dispute resolution team available 7 days a week. Both parties can upload evidence and a Shamba Direct mediator will resolve issues within 48 hours.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>Can I list any crop?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-a">Yes. Shamba Direct supports all food crops grown in Kenya — vegetables, fruits, cereals, legumes, roots, herbs, and animal products. We review listings to ensure they meet our quality and safety standards.</div>
+    </div>
+    <div class="faq-item">
+      <div class="faq-q" onclick="toggleFaq(this)">
+        <span>How does transport and delivery work?</span>
+        <span class="faq-icon">+</span>
+      </div>
+      <div class="faq-a">Transport is arranged between farmer and buyer directly. For large orders, many buyers send their own trucks. Shamba Direct has partnered with logistics companies and the details are available in your dashboard once you're registered. Farm pickup is also common.</div>
+    </div>
+    <div style="text-align:center;margin-top:3rem;">
+      <p style="color:var(--text-muted);margin-bottom:1.25rem;">Still have questions?</p>
+      <a class="btn-primary" href="contact.html">Contact Our Team →</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-main">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <div class="footer-logo-icon">🌱</div>
+          <div class="footer-logo-text">Shamba Direct</div>
+        </div>
+        <p>Connecting Kenya's farms directly to companies, supermarkets, and restaurants. No brokers. Fair prices. Better livelihoods.</p>
+      </div>
+      <div>
+        <div class="footer-col-title">Quick Links</div>
+        <a class="footer-link" href="index.html">Home</a>
+        <a class="footer-link" href="marketplace.html">Marketplace</a>
+        <a class="footer-link" href="how-it-works.html">How It Works</a>
+        <a class="footer-link" href="contact.html">Contact</a>
+      </div>
+      <div>
+        <div class="footer-col-title">For Farmers</div>
+        <a class="footer-link" href="register.html">Register Free</a>
+        <a class="footer-link" href="dashboard.html">Post Produce</a>
+        <a class="footer-link" href="how-it-works.html">FAQ</a>
+      </div>
+      <div>
+        <div class="footer-col-title">Contact Us</div>
+        <div class="footer-contact-item"><span class="footer-contact-icon">📞</span> +254 700 123 456</div>
+        <div class="footer-contact-item"><span class="footer-contact-icon">✉️</span> hello@shambadirect.co.ke</div>
+        <div class="footer-contact-item"><span class="footer-contact-icon">📍</span> Ngong Road, Nairobi</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-bottom-inner">
+      <div class="footer-bottom-left">© 2025 Shamba Direct Ltd. All rights reserved. Registered in Kenya.</div>
+      <div class="footer-bottom-links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Use</a>
+        <a href="#">Cookie Policy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+function switchHiwTab(type) {
+  document.getElementById('hiw-tab-farmer').classList.toggle('active', type === 'farmer');
+  document.getElementById('hiw-tab-company').classList.toggle('active', type === 'company');
+  document.getElementById('hiw-content-farmer').classList.toggle('form-hidden', type !== 'farmer');
+  document.getElementById('hiw-content-company').classList.toggle('form-hidden', type !== 'company');
+}
+function toggleFaq(el) {
+  el.closest('.faq-item').classList.toggle('open');
+}
+</script>
+
+</body>
+</html>

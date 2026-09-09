@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Register Free — Shamba Direct</title>
+<link rel="stylesheet" type="text/css" href="CSS/shared.css"/>
+<link rel="stylesheet" type="text/css" href="CSS/register.css"/>
+<link rel="shortcut icon" type="Image/jpeg" href="images/favicon.jpg"/>
+</head>
+<body>
+
+<!-- NAVBAR -->
+<nav>
+  <div class="nav-inner">
+    <a class="logo" href="index.html">
+      <div class="logo-icon">🌱</div>
+      <div>
+        <div class="logo-text">Shamba Direct</div>
+        <div class="logo-sub">Kenya's Farm Marketplace</div>
+      </div>
+    </a>
+    <div class="nav-links">
+      <a class="nav-link" href="index.html">Home</a>
+      <a class="nav-link" href="marketplace.html">Marketplace</a>
+      <a class="nav-link" href="how-it-works.html">How It Works</a>
+      <a class="nav-link" href="contact.html">About & Contact</a>
+      <a class="btn-nav-login" href="dashboard.html">Dashboard</a>
+      <a class="btn-nav-register active" href="register.html">Register Free</a>
+    </div>
+  </div>
+</nav>
+
+<!-- REGISTER PAGE -->
+<div class="reg-page">
+  <div class="reg-container">
+    <div class="reg-header">
+      <div class="section-label">Join for Free</div>
+      <h2 class="section-title">Create Your Account</h2>
+      <p style="color:var(--text-muted);">No fees. No subscriptions. We only earn when you do — 3% platform fee per sale.</p>
+    </div>
+
+    <div class="benefits-list">
+      <div class="benefit-item"><span class="benefit-check">✅</span> <span>Free to register — no monthly charges</span></div>
+      <div class="benefit-item"><span class="benefit-check">✅</span> <span>Get paid directly via M-Pesa</span></div>
+      <div class="benefit-item"><span class="benefit-check">✅</span> <span>Access buyers from all 47 counties</span></div>
+      <div class="benefit-item"><span class="benefit-check">✅</span> <span>Works on any smartphone or feature phone</span></div>
+    </div>
+
+    <div class="reg-tabs">
+      <button class="reg-tab active" id="tab-farmer" onclick="switchTab('farmer')">🌾 I'm a Farmer</button>
+      <button class="reg-tab" id="tab-company" onclick="switchTab('company')">🏢 I'm a Company/Buyer</button>
+    </div>
+
+    <!-- Farmer Form -->
+    <div class="reg-form" id="form-farmer">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Full Name *</label>
+          <input type="text" class="form-input" placeholder="e.g. James Mwangi"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number (M-Pesa) *</label>
+          <input type="tel" class="form-input" placeholder="0712 345 678"/>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">County *</label>
+          <select class="form-input form-select">
+            <option value="">Select your county</option>
+            <option>Nairobi</option><option>Kiambu</option><option>Kirinyaga</option>
+            <option>Nakuru</option><option>Uasin Gishu</option><option>Nyandarua</option>
+            <option>Meru</option><option>Kajiado</option><option>Machakos</option>
+            <option>Kisumu</option><option>Other</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Farm Size (Acres)</label>
+          <select class="form-input form-select">
+            <option>Less than 1 acre</option>
+            <option>1 – 5 acres</option>
+            <option>5 – 20 acres</option>
+            <option>More than 20 acres</option>
+          </select>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Main Crops You Grow *</label>
+        <input type="text" class="form-input" placeholder="e.g. Tomatoes, Maize, Potatoes"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">National ID Number</label>
+        <input type="text" class="form-input" placeholder="For identity verification"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Create Password *</label>
+        <input type="password" class="form-input" placeholder="At least 8 characters"/>
+      </div>
+      <div class="form-group">
+        <label class="filter-option" style="font-size:0.88rem;">
+          <input type="checkbox" style="accent-color:var(--green);"/> I agree to the <a href="#" style="color:var(--green);">Terms of Service</a> and <a href="#" style="color:var(--green);">Privacy Policy</a>
+        </label>
+      </div>
+      <a class="form-submit" href="dashboard.html" style="display:block;text-align:center;">Create Farmer Account →</a>
+    </div>
+
+    <!-- Company Form (hidden by default) -->
+    <div class="reg-form form-hidden" id="form-company">
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Company / Organisation Name *</label>
+          <input type="text" class="form-input" placeholder="e.g. Nairobi Provisions Ltd"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">KRA PIN</label>
+          <input type="text" class="form-input" placeholder="For verified buyers"/>
+        </div>
+      </div>
+      <div class="form-grid">
+        <div class="form-group">
+          <label class="form-label">Contact Person Name *</label>
+          <input type="text" class="form-input" placeholder="Full name"/>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number *</label>
+          <input type="tel" class="form-input" placeholder="0712 345 678"/>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Email Address</label>
+        <input type="email" class="form-input" placeholder="info@company.co.ke"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Type of Business *</label>
+        <select class="form-input form-select">
+          <option value="">Select type</option>
+          <option>Supermarket / Retail</option>
+          <option>Food Processing Company</option>
+          <option>Restaurant / Hotel</option>
+          <option>School Feeding Program</option>
+          <option>Export Company</option>
+          <option>Other</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Products You Need (Regularly)</label>
+        <input type="text" class="form-input" placeholder="e.g. Tomatoes, Maize, Onions"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Delivery / Collection Address *</label>
+        <input type="text" class="form-input" placeholder="City, area, county"/>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Create Password *</label>
+        <input type="password" class="form-input" placeholder="At least 8 characters"/>
+      </div>
+      <a class="form-submit" href="dashboard.html" style="display:block;text-align:center;">Create Buyer Account →</a>
+    </div>
+
+    <p style="text-align:center;margin-top:1.5rem;font-size:0.88rem;color:var(--text-muted);">Already have an account? <a href="dashboard.html" style="color:var(--green);font-weight:700;">Sign in →</a></p>
+  </div>
+</div>
+
+<!-- FOOTER -->
+<footer>
+  <div class="footer-main">
+    <div class="footer-grid">
+      <div class="footer-brand">
+        <div class="footer-logo">
+          <div class="footer-logo-icon">🌱</div>
+          <div class="footer-logo-text">Shamba Direct</div>
+        </div>
+        <p>Connecting Kenya's farms directly to companies, supermarkets, and restaurants. No brokers. Fair prices. Better livelihoods.</p>
+      </div>
+      <div>
+        <div class="footer-col-title">Quick Links</div>
+        <a class="footer-link" href="index.html">Home</a>
+        <a class="footer-link" href="marketplace.html">Marketplace</a>
+        <a class="footer-link" href="how-it-works.html">How It Works</a>
+        <a class="footer-link" href="contact.html">Contact</a>
+      </div>
+      <div>
+        <div class="footer-col-title">For Farmers</div>
+        <a class="footer-link" href="register.html">Register Free</a>
+        <a class="footer-link" href="dashboard.html">Post Produce</a>
+        <a class="footer-link" href="how-it-works.html">FAQ</a>
+      </div>
+      <div>
+        <div class="footer-col-title">Contact Us</div>
+        <div class="footer-contact-item"><span class="footer-contact-icon">📞</span> +254 700 123 456</div>
+        <div class="footer-contact-item"><span class="footer-contact-icon">✉️</span> hello@shambadirect.co.ke</div>
+        <div class="footer-contact-item"><span class="footer-contact-icon">📍</span> Ngong Road, Nairobi</div>
+      </div>
+    </div>
+  </div>
+  <div class="footer-bottom">
+    <div class="footer-bottom-inner">
+      <div class="footer-bottom-left">© 2025 Shamba Direct Ltd. All rights reserved. Registered in Kenya.</div>
+      <div class="footer-bottom-links">
+        <a href="#">Privacy Policy</a>
+        <a href="#">Terms of Use</a>
+        <a href="#">Cookie Policy</a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+function switchTab(type) {
+  document.getElementById('tab-farmer').classList.toggle('active', type === 'farmer');
+  document.getElementById('tab-company').classList.toggle('active', type === 'company');
+  document.getElementById('form-farmer').classList.toggle('form-hidden', type !== 'farmer');
+  document.getElementById('form-company').classList.toggle('form-hidden', type !== 'company');
+}
+</script>
+
+</body>
+</html>
