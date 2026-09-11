@@ -1,0 +1,186 @@
+openapi: 3.0.0
+info:
+  title: Shamba Direct API
+  version: 1.0.0
+paths:
+
+  /listings:
+    get:
+     summary: Return active produce listings filtered by county
+      parameters:
+        - name: county
+          in: query
+          schema: 
+            type: string 
+      responses:
+        '200':
+	  description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    id: { type: integer, example: 1 }
+                    name: { type: string, example: Roma Tomatoes }
+                    price_per_kg: { type: number, example: 45.00 }
+                    quantity_kg: { type: integer, example: 500 }
+                    category: {  type: string, example: Vegetables }
+                    county: { type: string, example: Kirinyaga }
+
+
+
+
+  /market-prices:
+    get:
+     summary: Return current market commodity prices per kg 
+     responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    crop_name: { type: string, example: Tomatoes }
+                    price_per_kg: { type: number, example: 80.00 }
+                    county: { type: string, example: Kirinyaga }
+
+
+   /farmers/ratings:
+    get:
+     summary: Return verified farmer quality ratings 
+     parameters:
+        - name: county
+          in: query
+          schema: 
+            type: string
+     responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    farmer_id: { type: integer, example: 1 }
+                    farmer_name: { type: string, example: John Kamau }
+                    rating: { type: number, example: 4.8 }                     
+									
+
+
+   /farmers/{farmer_id}/rating:
+    get:
+     summary: Return the verified rating for a specific farmer 
+     parameters:
+        - name: farmer_id
+          in: path
+          required: true
+          schema: 
+            type: integer
+     responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  properties:
+                    farmer_id: { type: integer, example: 1 }
+                    farmer_name: { type: string, example: John Kamau }
+		    rating: { type: number, example: 4.8 }   
+        '404': 
+          description: Farmer not found
+                      
+
+
+
+
+    /listings/{listing_id}:
+      get:
+        summary: Return a single active produce listing 
+        parameters:
+          - name: listing_id
+            in: path
+            required: true
+            schema: 
+              type: integer
+        responses:
+           '200':
+            description: Successful response
+            content:
+              application/json:
+                schema:
+                  type: object
+                  properties:
+                    id: { type: integer, example: 1 }
+                    farmer_id: { type: integer, example: 1 }
+                    farmer_name: { type: string, example: John Kamau }
+                    farmer_verified: { type: boolean, example: true }
+                    name: { type: string, example: Roma Tomatoes }
+                    category: { type: string, example: vegetables }
+                    price_per_kg: { type: number, example: 45.00 }
+                    quantity_kg: { type: integer, example: 500}
+                    views: { type: integer, example: 47 }
+                    county: { type: string, example: nairobi}
+           '404': 
+            description: Listing not found
+
+
+
+    /headquarters:
+      get:
+        summary: Retrieve list of headquarters or hubs
+        parameters:
+          - name: county
+            in: query
+            required: false
+            schema: 
+              type: string
+        responses:
+           '200':
+            description: Successful response
+            content:
+              application/json:
+                schema:
+                  type: array
+		  items: 
+		    type: object
+                    properties:
+                      id: { type: integer, example: 1 }
+                      region_name: { type: string, example: Shamba direct nairobi hub }
+                      address: { type: string, example: Ngong Road,Kiatumu plaza }
+                      county: { type: string, example: nairobi}
+                      latitude: { type: number, example: -1.2921 }
+                      longitude: { type: number, example: 36.8219 }
+
+           
+    /headquarters/{id}:
+      get:
+        summary: Retrieve a single heaquarters or hub
+        parameters:
+          - name: id
+            in: path
+            required: true
+            schema: 
+              type: integer
+        responses:
+           '200':
+             description: Successful response
+             content:
+               application/json:
+                schema:
+                  type: object
+                  properties:
+                    id: { type: integer, example: 1 }
+                    region_name: { type: string, example: Shamba direct nairobi hub }
+                    address: { type: string, example: Ngong Road,Kiatumu plaza }
+                    county: { type: string, example: nairobi}
+                    latitude: { type: number, example: -1.2921 }
+                    longitude: { type: number, example: 36.8219 }
+            '404':
+              description: Headquarters not found
+
