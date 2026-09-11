@@ -9,7 +9,13 @@ router.get('/', async (req, res) => {
   const { farmerId, buyerId } = req.query;
   try {
     if (farmerId) {
-      const [rows] = await db.query('SELECT * FROM farmer_ratings WHERE farmer_id = ? ORDER BY created_at DESC', [farmerId]);
+      const [rows] = await db.query(
+        `SELECT fr.*, u.full_name AS farmer_name 
+        FROM farmer_ratings fr 
+        JOIN users u ON fr.farmer_id = u.id 
+        WHERE fr.farmer_id = ? 
+        ORDER BY fr.created_at DESC`,
+        [farmerId]);
       const [[agg]] = await db.query(
         'SELECT ROUND(AVG(rating),1) AS average_rating, COUNT(*) AS review_count FROM farmer_ratings WHERE farmer_id = ?',
         [farmerId]
