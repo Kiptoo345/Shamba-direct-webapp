@@ -1,0 +1,133 @@
+{
+  "openapi": "3.0.0",
+  "info": null,
+  "title": "Shamba Direct Api",
+  "version": "1.0.0",
+  "paths": null,
+  "/listings": null,
+  "get": null,
+  "summary": "Return active produce listings filtered by county",
+  "name": "county",
+  "in": "query",
+  "schema": null,
+  "type": "string",
+  "responses": null,
+  "200": null,
+  "description": "Successful response",
+  "content": null,
+  "application/json": null,
+  "schema": null,
+  "type": "array",
+  "items": null,
+  "properties": null,
+  "id": {
+    "type": "integer",
+    "example": 1
+  },
+  "name": {
+    "type": "string",
+    "example": "Roma Tomatoes"
+  },
+  "price_per_kg": {
+    "type": "number",
+    "example": 45.00
+  },
+  "quantity_kg": {
+    "type": "integer",
+    "example": 500
+  },
+  "category": {
+    "type": "string",
+    "example": "Vegetables"
+  },
+  "county": {
+    "type": "string",
+    "example": "Kirinyaga"
+  },
+  "/market-prices": null,
+  "get": null,
+  "summary": "Return current market commodity prices per kg",
+  "responses": null,
+  "200": null,
+  "description": "Succesful response",
+  "content": null,
+  "application/json": null,
+  "schema": null,
+  "type": "array",
+  "items": null,
+  "properties": null,
+  "crop_name": {
+    "type": "string",
+    "example": "Tomatoes"
+  },
+  "price_per_kg": {
+    "type": "number",
+    "example": 80.00
+  },
+  "county": {
+    "type": "string",
+    "example": "Kirinyaga"
+  },
+  "/farmers/ratings": null,
+  "get": null,
+  "summary": "Return verified farmer quality ratings",
+  "parameters": [
+    {
+      "name": "county"
+    }
+  ],
+  "in": "query",
+  "responses": null,
+  "200": null,
+  "description": "Succesful response",
+  "content": null,
+  "application/json": null,
+  "schema": null,
+  "type": "array",
+  "items": null,
+  "properties": null,
+  "farmer_id": {
+    "type": "integer",
+    "example": 1
+  },
+  "farmer_name": {
+    "type": "number",
+    "example": "John Kamau"
+  },
+  "rating": {
+    "type": "number",
+    "example": 4.8
+  },
+  "/farmers/{farmer_id}/ratings": null,
+  "get": null,
+  "summary": "Return verified ratitng fro specific farmer",
+  "parameters": [
+    {
+      "name": "farmer_id"
+    }
+  ],
+  "in": "path",
+  "responses": null,
+  "200": null,
+  "description": "Succesful response",
+  "content": null,
+  "application/json": null,
+  "schema": null,
+  "type": "integer",
+  "items": null,
+  "properties": null,
+  "farmer_id": {
+    "type": "integer",
+    "example": 1
+  },
+  "farmer_name": {
+    "type": "string",
+    "example": "John Kamau"
+  },
+  "rating": {
+    "type": "number",
+    "example": 4.8
+  },
+  "404": null,
+  "description": "Farmer not found"
+}
