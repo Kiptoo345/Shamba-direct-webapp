@@ -30,20 +30,30 @@ router.get('/', async (req, res) => {
 
 // POST /api/enquiries  (INSERT — "Contact Farmer" button on the Marketplace)
 router.post('/', async (req, res) => {
-  const { productId, buyerId, message } = req.body;
+  const { product_id, buyer_id, message } = req.body;
   // Contacting a farmer requires a logged-in buyer, same as placing an
   // order — the client only reaches this endpoint when a user is signed
   // in, but we also enforce it here so the rule can't be bypassed.
-  if (!productId || !buyerId || !message) {
+  if (!product_id || !buyer_id || !message) {
     return res.status(400).json({ error: 'You must be logged in to contact a farmer. productId, buyerId and message are required' });
   }
+  if (!Number.isInteger(Number(product_id))) {
+    return res.status(400).json({ message: 'product_id must be an integer' });
+  }
+  if (!Number.isInteger(Number(buyer_id))) {
+    return res.status(400).json({ message: 'buyer_id must be an integer' });
+  }
+  if (typeof message !== 'string' || message.trim() === '') {
+    return res.status(400).json({ message: 'message must be a non-empty string' });
+  }
   try {
-    const [[product]] = await db.query('SELECT farmer_id FROM products WHERE id = ?', [productId]);
-    if (!product) return res.status(404).json({ error: 'Listing not found' });
-
+    const [[product]] = await db.query('SELECT farmer_id FROM products WHERE id = ?', [product_id]);
+    if (!product) {
+      return res.status(404).json({ error: 'Listing not found' });
+    } 
     const [result] = await db.query(
       `INSERT INTO enquiries (product_id, buyer_id, farmer_id, message) VALUES (?, ?, ?, ?)`,
-      [productId, buyerId, product.farmer_id, message]
+      [product_id, buyer_id, product.farmer_id, message]
     );
     res.status(201).json({ message: 'Enquiry sent to farmer', id: result.insertId });
   } catch (error) {
