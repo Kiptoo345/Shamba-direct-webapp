@@ -28,7 +28,15 @@ router.get('/', async (req, res) => {
        ORDER BY p.created_at DESC`,
       params
     );
-    res.json(products);
+      const shaped = products.map(p => ({
+        id: p.id,
+        name: p.name,
+        price_per_kg: parseFloat(p.price_per_kg),
+        quantity_kg: parseInt(p.quantity_kg,),
+        category: p.category,
+        county: p.county
+      }));
+      res.json(shaped);
   } catch (error) {
     console.error('Error fetching products:', error);
     res.status(500).json({ error: 'Failed to fetch products' });
@@ -48,7 +56,20 @@ router.get('/:id', async (req, res) => {
       [id]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Listing not found' });
-    res.json(rows[0]);
+
+    const p = rows[0];
+    res.json({
+      id: p.id,
+      farmer_id: p.farmer_id,
+      farmer_name: p.farmer_name,
+      farmer_verified: p.farmer_verified === 1 ? true : false,
+      name: p.name,
+      category: p.category,
+      price_per_kg: parseFloat(p.price_per_kg),
+      quantity_kg: parseInt(p.quantity_kg),
+      views: p.views,
+      county: p.county
+    });
   } catch (error) {
     console.error('Error fetching product:', error);
     res.status(500).json({ error: 'Failed to fetch listing' });

@@ -4,20 +4,81 @@ const db = require('../db');
 
 // GET /api/headquarters  (SELECT — used by the SettleIn downstream integration)
 router.get('/', async (req, res) => {
+  const { county } = req.query;
+
   try {
-    const [rows] = await db.query('SELECT * FROM headquarters ORDER BY region_name');
-    res.json(rows);
+    const [rows] = county
+      ? await db.query(
+       `SELECT
+             id,
+             region_name,
+             address,
+             county,
+             latitude,
+             longitude
+           FROM headquarters
+           WHERE county = ?
+           ORDER BY region_name`,
+          [county] )
+
+    : await db.query(
+         `SELECT
+             id,
+             region_name,
+             address,
+             county,
+             latitude,
+             longitude
+           FROM headquarters
+           ORDER BY region_name`
+    );
+
+    const shaped = rows.map(row => ({
+      id: Number(row.id),
+      region_name: row.region_name,
+      address: row.address,
+      county: row.county,
+      latitude: Number(row.latitude),
+      longitude: Number(row.longitude)
+    }));
+
+    res.status(200).json(shaped);
+
   } catch (error) {
     console.error('Error fetching headquarters:', error);
     res.status(500).json({ error: 'Failed to fetch headquarters' });
   }
 });
 
+// GET /api/headquarters/:id
 router.get('/:id', async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM headquarters WHERE id = ?', [req.params.id]);
-    if (rows.length === 0) return res.status(404).json({ error: 'Headquarters not found' });
-    res.json(rows[0]);
+    const [rows] = await db.query(
+      `SELECT
+         id,
+         region_name,
+         address,
+         county,
+         latitude,
+         longitude
+       FROM headquarters
+       WHERE id = ?`, [req.params.id]
+      );
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Headquarters not found' });
+    }
+
+    const row = rows[0];
+    res.status(200).json({
+      id: Number(row.id),
+      region_name: row.region_name,
+      address: row.address,
+      county: row.county,
+      latitude: Number(row.latitude),
+      longitude: Number(row.longitude)
+    });
+    
   } catch (error) {
     console.error('Error fetching headquarters:', error);
     res.status(500).json({ error: 'Failed to fetch headquarters' });

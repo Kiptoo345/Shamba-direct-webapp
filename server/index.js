@@ -25,6 +25,7 @@ const contactRoutes = require('./routes/contact');
 const ratingRoutes = require('./routes/ratings');
 const headquartersRoutes = require('./routes/headquarters');
 const marketPriceRoutes = require('./routes/marketPrices');
+const farmerRoutes = require('./routes/farmers');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
@@ -34,6 +35,7 @@ app.use('/api/contact', contactRoutes);
 app.use('/api/ratings', ratingRoutes);
 app.use('/api/headquarters', headquartersRoutes);
 app.use('/api/market-prices', marketPriceRoutes);
+app.use('/api/farmers', farmerRoutes);
 
 // Test Database Connection Route
 app.get('/api/test-db', async (req, res) => {
