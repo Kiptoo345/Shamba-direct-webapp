@@ -40,8 +40,11 @@ router.get('/', async (req, res) => {
 // POST /api/orders  (INSERT — buyer places an order against a listing)
 router.post('/', async (req, res) => {
   const { productId, buyerId, quantityKg } = req.body;
-  if (!productId || !buyerId || !quantityKg) {
+  if (!productId || !buyerId || quantityKg === undefined || quantityKg === null) {
     return res.status(400).json({ error: 'productId, buyerId and quantityKg are required' });
+  }
+  if (Number(quantityKg) <= 0) {
+    return res.status(400).json({ error: 'quantityKg must be greater than 0' });
   }
 
   const connection = await db.getConnection();

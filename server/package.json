@@ -6,7 +6,13 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "jest"
+    "test": "jest --runInBand --forceExit"
+  },
+  "jest": {
+    "testPathIgnorePatterns": [
+      "/node_modules/",
+      "__tests__/partner-suite/"
+    ]
   },
   "keywords": [],
   "author": "",

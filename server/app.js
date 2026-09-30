@@ -1,0 +1,56 @@
+const express = require('express');
+const cors = require('cors');
+require('dotenv').config();
+
+const db = require('./db');
+
+const app = express();
+
+// Middleware
+app.use(cors()); // Allows the React frontend to communicate with this backend
+app.use(express.json()); // Parses incoming JSON payloads
+
+// Health Check Route
+app.get('/', (req, res) => {
+  res.send('Shamba Direct API is running...');
+});
+
+// Routes
+const authRoutes = require('./routes/auth');
+const productRoutes = require('./routes/products');
+const orderRoutes = require('./routes/orders');
+const enquiryRoutes = require('./routes/enquiries');
+const contactRoutes = require('./routes/contact');
+const ratingRoutes = require('./routes/ratings');
+const headquartersRoutes = require('./routes/headquarters');
+const marketPriceRoutes = require('./routes/marketPrices');
+const farmerRoutes = require('./routes/farmers');
+
+app.use('/api/auth', authRoutes);
+app.use('/api/products', productRoutes);
+app.use('/api/listings', productRoutes);
+app.use('/api/orders', orderRoutes);
+app.use('/api/enquiries', enquiryRoutes);
+app.use('/api/contact', contactRoutes);
+app.use('/api/ratings', ratingRoutes);
+app.use('/api/headquarters', headquartersRoutes);
+app.use('/api/market-prices', marketPriceRoutes);
+app.use('/api/farmers', farmerRoutes);
+
+// Test Database Connection Route
+app.get('/api/test-db', async (req, res) => {
+  try {
+    const [rows] = await db.query('SELECT 1 + 1 AS result');
+    res.json({ message: 'Database connected successfully!', data: rows });
+  } catch (error) {
+    console.error('Database connection error:', error.message);
+    res.status(500).json({ error: 'Database connection failed', details: error.message });
+  }
+});
+
+// NOTE: no app.listen() here on purpose. This file only builds and exports
+// the Express app so that Week 7's automated tests (supertest) can import
+// it directly (`require('../app')`) and send requests to it in-process,
+// without needing a real server bound to a real port. Starting the server
+// is now index.js's job.
+module.exports = app;

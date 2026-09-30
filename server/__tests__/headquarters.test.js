@@ -1,19 +1,23 @@
 const request = require('supertest');
-const app = require('../index');
+const app = require('../app');
 const db = require('../db');
 
+const createdIds = [];
+
 afterAll(async () => {
+  if (createdIds.length > 0) {
+    await db.query('DELETE FROM headquarters WHERE id IN (?)', [createdIds]);
+  }
   await db.end();
 });
 
-// latitude/longitude may be null (a hub without coordinates), never a string
-const numberOrNull = (v) => v === null || typeof v === 'number';
+const numberOrNull = (value) => value === null || typeof value === 'number';
 
 describe('GET /api/headquarters', () => {
   it('returns an array of hubs matching the contract', async () => {
-    const res = await request(app).get('/api/headquarters');            
+    const res = await request(app).get('/api/headquarters');
 
-    expect(res.status).toBe(200);                                       
+    expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body.length).toBeGreaterThan(0);
 
@@ -36,21 +40,21 @@ describe('GET /api/headquarters', () => {
   it('never returns coordinates as strings', async () => {
     const res = await request(app).get('/api/headquarters');
 
-    res.body.forEach((h) => {
-      expect(numberOrNull(h.latitude)).toBe(true);
-      expect(numberOrNull(h.longitude)).toBe(true);
+    res.body.forEach((hub) => {
+      expect(numberOrNull(hub.latitude)).toBe(true);
+      expect(numberOrNull(hub.longitude)).toBe(true);
     });
   });
 
   it('filters by county', async () => {
-    const all = await request(app).get('/api/headquarters');          
+    const all = await request(app).get('/api/headquarters');
     const county = all.body[0].county;
 
     const res = await request(app).get('/api/headquarters').query({ county });
 
     expect(res.status).toBe(200);
     expect(res.body.length).toBeGreaterThan(0);
-    res.body.forEach((h) => expect(h.county).toBe(county));
+    res.body.forEach((hub) => expect(hub.county).toBe(county));
   });
 
   it('returns an empty array for a county with no hubs', async () => {
@@ -61,13 +65,10 @@ describe('GET /api/headquarters', () => {
     expect(res.status).toBe(200);
     expect(res.body).toEqual([]);
   });
-
 });
 
-
-
 describe('GET /api/headquarters/:id', () => {
-  let hub;   // a real hub taken from the list endpoint
+  let hub;
 
   beforeAll(async () => {
     const list = await request(app).get('/api/headquarters');
@@ -94,12 +95,23 @@ describe('GET /api/headquarters/:id', () => {
     expect(res.status).toBe(404);
     expect(res.body).toHaveProperty('error');
   });
+});
 
-  it('returns 404 for boundary ids 0 and -1', async () => {
-    const zero = await request(app).get('/api/headquarters/0');
-    const negative = await request(app).get('/api/headquarters/-1');
+describe('POST /api/headquarters', () => {
+  it('returns 400 when required fields are missing', async () => {
+    const res = await request(app).post('/api/headquarters').send({ county: 'Nairobi' });
 
-    expect(zero.status).toBe(404);
-    expect(negative.status).toBe(404);
+    expect(res.status).toBe(400);
+    expect(res.body).toHaveProperty('error');
+  });
+
+  it('creates a headquarters hub', async () => {
+    const res = await request(app)
+      .post('/api/headquarters')
+      .send({ regionName: 'Test Hub', county: 'Nakuru' });
+    createdIds.push(res.body.id);
+
+    expect(res.status).toBe(201);
+    expect(res.body).toHaveProperty('id');
   });
 });

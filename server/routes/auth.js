@@ -124,11 +124,14 @@ router.put('/users/:id', async (req, res) => {
   const { fullName, email, county, farmSize, mainCrops, businessType, deliveryAddress } = req.body;
 
   try {
-    await db.query(
+    const [result] = await db.query(
       `UPDATE users SET full_name = COALESCE(?, full_name), email = COALESCE(?, email), county = COALESCE(?, county)
        WHERE id = ?`,
       [fullName || null, email || null, county || null, id]
     );
+    if (result.affectedRows === 0) {
+      return res.status(404).json({ error: 'User not found' });
+    }
 
     const [[user]] = await db.query('SELECT role FROM users WHERE id = ?', [id]);
     if (user && user.role === 'farmer') {

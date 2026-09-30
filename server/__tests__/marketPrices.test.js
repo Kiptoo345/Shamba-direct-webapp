@@ -1,5 +1,5 @@
 const request = require('supertest');
-const app = require('../index');
+const app = require('../app');
 const db = require('../db');
 
 afterAll(async () => {
@@ -8,9 +8,9 @@ afterAll(async () => {
 
 describe('GET /api/market-prices', () => {
   it('returns an array of prices matching the contract', async () => {
-    const res = await request(app).get('/api/market-prices');         
+    const res = await request(app).get('/api/market-prices');
 
-    expect(res.status).toBe(200);                                      
+    expect(res.status).toBe(200);
     expect(Array.isArray(res.body)).toBe(true);
     expect(res.body.length).toBeGreaterThan(0);
 
@@ -29,14 +29,14 @@ describe('GET /api/market-prices', () => {
   });
 
   it('filters by county', async () => {
-    const all = await request(app).get('/api/market-prices');         
+    const all = await request(app).get('/api/market-prices');
     const county = all.body[0].county;
 
     const res = await request(app).get('/api/market-prices').query({ county });
 
     expect(res.status).toBe(200);
     expect(res.body.length).toBeGreaterThan(0);
-    res.body.forEach((p) => expect(p.county).toBe(county));
+    res.body.forEach((price) => expect(price.county).toBe(county));
   });
 
   it('returns an empty array for a county with no prices', async () => {
@@ -51,10 +51,9 @@ describe('GET /api/market-prices', () => {
   it('returns prices that are positive numbers', async () => {
     const res = await request(app).get('/api/market-prices');
 
-    res.body.forEach((p) => {
-      expect(Number.isFinite(p.price_per_kg)).toBe(true);
-      expect(p.price_per_kg).toBeGreaterThan(0);
+    res.body.forEach((price) => {
+      expect(Number.isFinite(price.price_per_kg)).toBe(true);
+      expect(price.price_per_kg).toBeGreaterThan(0);
     });
   });
 });
-

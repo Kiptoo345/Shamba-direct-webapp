@@ -1,15 +1,14 @@
 const request = require('supertest');
-const app = require('../index');
+const app = require('../app');
 const db = require('../db');
 
 let productId;
 let buyerId;
-const createdIds = [];   // enquiry rows created by these tests, removed in afterAll
+const createdIds = [];
 
 beforeAll(async () => {
-  // a real listing and a real buyer, not hardcoded IDs
-  const list = await request(app).get('/api/listings');
-  productId = list.body[0].id;
+  const listings = await request(app).get('/api/listings');
+  productId = listings.body[0].id;
 
   const [[buyer]] = await db.query("SELECT id FROM users WHERE role = 'buyer' LIMIT 1");
   buyerId = buyer.id;
@@ -30,9 +29,9 @@ const validBody = () => ({
 
 describe('POST /api/enquiries', () => {
   it('creates an enquiry and returns 201 with an id', async () => {
-    const res = await request(app).post('/api/enquiries').send(validBody());   
+    const res = await request(app).post('/api/enquiries').send(validBody());
 
-    expect(res.status).toBe(201);                                              
+    expect(res.status).toBe(201);
     expect(typeof res.body.id).toBe('number');
     expect(res.body.message).toBe('Enquiry submitted successfully');
     createdIds.push(res.body.id);
@@ -104,7 +103,6 @@ describe('POST /api/enquiries', () => {
     expect(res.body).toHaveProperty('error');
   });
 
-  // Not found 
   it('returns 404 when the listing does not exist', async () => {
     const res = await request(app)
       .post('/api/enquiries')
@@ -123,7 +121,6 @@ describe('POST /api/enquiries', () => {
     expect(res.body).toHaveProperty('error');
   });
 
-  // Edge cases
   it('accepts numeric strings for the ids', async () => {
     const res = await request(app)
       .post('/api/enquiries')
