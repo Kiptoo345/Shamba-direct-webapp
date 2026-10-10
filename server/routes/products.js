@@ -14,7 +14,7 @@ router.get('/', async (req, res) => {
   if (county) { clauses.push('p.county = ?'); params.push(county); }
   if (category) { clauses.push('p.category = ?'); params.push(category); }
   if (farmerId) { clauses.push('p.farmer_id = ?'); params.push(farmerId); }
-  if (status) { clauses.push('p.status = ?'); params.push(status); }
+  if (status) { clauses.push('p.status = ?'); params.push('active'); }
   if (minQuantity) { clauses.push('p.quantity_kg >= ?'); params.push(minQuantity); }
 
   const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
@@ -48,26 +48,30 @@ router.get('/', async (req, res) => {
 // -----------------------------------------------------------------------
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
+  if (!Number.isInteger(Number(id))) {
+    return res.status(400).json({ error: 'listing id must be an integer' });
+  }
   try {
-    await db.query('UPDATE products SET views = views + 1 WHERE id = ?', [id]);
     const [rows] = await db.query(
       `SELECT p.*, u.full_name AS farmer_name, u.is_verified AS farmer_verified
-       FROM products p JOIN users u ON u.id = p.farmer_id WHERE p.id = ?`,
+       FROM products p JOIN users u ON u.id = p.farmer_id
+       WHERE p.id = ? AND p.status = 'active'`,
       [id]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Listing not found' });
 
+    await db.query('UPDATE products SET views = views + 1 WHERE id = ?', [id]);
     const p = rows[0];
     res.json({
       id: p.id,
       farmer_id: p.farmer_id,
       farmer_name: p.farmer_name,
-      farmer_verified: p.farmer_verified === 1 ? true : false,
+      farmer_verified: p.farmer_verified === 1,
       name: p.name,
       category: p.category,
       price_per_kg: parseFloat(p.price_per_kg),
       quantity_kg: parseInt(p.quantity_kg),
-      views: p.views,
+      views: p.views + 1,
       county: p.county
     });
   } catch (error) {

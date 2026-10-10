@@ -12,7 +12,7 @@ router.get('/', async (req, res) => {
 
     const shaped = rows.map(row => ({
       crop_name: row.crop_name,
-      price_per_kg: parseInt(row.price_per_kg),
+      price_per_kg: parseFloat(row.price_per_kg),
       county: row.county
     }));
 

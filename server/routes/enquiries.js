@@ -35,7 +35,7 @@ router.post('/', async (req, res) => {
   // order — the client only reaches this endpoint when a user is signed
   // in, but we also enforce it here so the rule can't be bypassed.
   if (!product_id || !buyer_id || !message) {
-    return res.status(400).json({ error: 'You must be logged in to contact a farmer. productId, buyerId and message are required' });
+    return res.status(400).json({ error: 'product_id, buyer_id and message are required' });
   }
   if (!Number.isInteger(Number(product_id))) {
     return res.status(400).json({ message: 'product_id must be an integer' });
@@ -51,9 +51,13 @@ router.post('/', async (req, res) => {
     if (!product) {
       return res.status(404).json({ error: 'Listing not found' });
     } 
+    const [[buyer]] = await db.query("SELECT id FROM users WHERE id = ? AND role = 'buyer'", [buyer_id]);
+    if (!buyer) {
+      return res.status(404).json({ error: 'Buyer not found' });
+    }
     const [result] = await db.query(
       `INSERT INTO enquiries (product_id, buyer_id, farmer_id, message) VALUES (?, ?, ?, ?)`,
-      [product_id, buyer_id, product.farmer_id, message]
+      [product_id, buyer_id, product.farmer_id, message.trim()]
     );
     res.status(201).json({ message: 'Enquiry sent to farmer', id: result.insertId });
   } catch (error) {

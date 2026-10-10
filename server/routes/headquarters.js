@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const db = require('../db');
 
+const toNum = (v) => (v === null || v === undefined ? null : Number(v));
+
 // GET /api/headquarters  (SELECT — used by the SettleIn downstream integration)
 router.get('/', async (req, res) => {
   const { county } = req.query;
@@ -38,8 +40,8 @@ router.get('/', async (req, res) => {
       region_name: row.region_name,
       address: row.address,
       county: row.county,
-      latitude: Number(row.latitude),
-      longitude: Number(row.longitude)
+      latitude: toNum(row.latitude),
+      longitude: toNum(row.longitude)
     }));
 
     res.status(200).json(shaped);
@@ -52,6 +54,9 @@ router.get('/', async (req, res) => {
 
 // GET /api/headquarters/:id
 router.get('/:id', async (req, res) => {
+  if (!Number.isInteger(Number(req.params.id))) {
+  return res.status(400).json({ error: 'id must be an integer' });
+}
   try {
     const [rows] = await db.query(
       `SELECT
@@ -75,8 +80,8 @@ router.get('/:id', async (req, res) => {
       region_name: row.region_name,
       address: row.address,
       county: row.county,
-      latitude: Number(row.latitude),
-      longitude: Number(row.longitude)
+      latitude: toNum(row.latitude),
+      longitude: toNum(row.longitude)
     });
     
   } catch (error) {

@@ -29,6 +29,7 @@ const farmerRoutes = require('./routes/farmers');
 
 app.use('/api/auth', authRoutes);
 app.use('/api/products', productRoutes);
+app.use('/api/listings', productRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/enquiries', enquiryRoutes);
 app.use('/api/contact', contactRoutes);
