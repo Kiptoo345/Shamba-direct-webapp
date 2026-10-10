@@ -38,13 +38,13 @@ router.post('/', async (req, res) => {
     return res.status(400).json({ error: 'product_id, buyer_id and message are required' });
   }
   if (!Number.isInteger(Number(product_id))) {
-    return res.status(400).json({ message: 'product_id must be an integer' });
+    return res.status(400).json({ error: 'product_id must be an integer' });
   }
   if (!Number.isInteger(Number(buyer_id))) {
-    return res.status(400).json({ message: 'buyer_id must be an integer' });
+    return res.status(400).json({ error: 'buyer_id must be an integer' });
   }
   if (typeof message !== 'string' || message.trim() === '') {
-    return res.status(400).json({ message: 'message must be a non-empty string' });
+    return res.status(400).json({ error: 'message must be a non-empty string' });
   }
   try {
     const [[product]] = await db.query('SELECT farmer_id FROM products WHERE id = ?', [product_id]);
@@ -59,7 +59,7 @@ router.post('/', async (req, res) => {
       `INSERT INTO enquiries (product_id, buyer_id, farmer_id, message) VALUES (?, ?, ?, ?)`,
       [product_id, buyer_id, product.farmer_id, message.trim()]
     );
-    res.status(201).json({ message: 'Enquiry sent to farmer', id: result.insertId });
+    res.status(201).json({ message: 'Enquiry submitted successfully', id: result.insertId });
   } catch (error) {
     console.error('Error creating enquiry:', error);
     res.status(500).json({ error: 'Failed to send enquiry' });

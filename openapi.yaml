@@ -2,6 +2,8 @@ openapi: 3.0.0
 info:
   title: Shamba Direct API
   version: 1.0.0
+servers:
+  - url: /api
 
 paths:
   /listings:
@@ -160,8 +162,8 @@ paths:
                     region_name: { type: string, example: Shamba direct nairobi hub }
                     address: { type: string, example: "Ngong Road,Kiatumu plaza" }
                     county: { type: string, example: nairobi}
-                    latitude: { type: number, example: -1.2921 }
-                    longitude: { type: number, example: 36.8219 }
+                    latitude: { type: number, nullable: true, example: -1.2921 }
+                    longitude: { type: number, nullable: true, example: 36.8219 }
 
   /headquarters/{id}:
     get:

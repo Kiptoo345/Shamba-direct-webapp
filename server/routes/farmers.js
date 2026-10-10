@@ -53,10 +53,12 @@ router.get('/ratings', async (req, res) => {
 
 // GET /api/farmers/:farmer_id/rating
 router.get('/:farmer_id/rating', async (req, res) => {
+  const { farmer_id } = req.params;
+  
   if (!Number.isInteger(Number(farmer_id))) {
     return res.status(400).json({ error: 'farmer_id must be an integer' });
   }
-    const { farmer_id } = req.params;
+    
 
     try {
         // Check that the farmer exists
