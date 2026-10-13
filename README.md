@@ -11,7 +11,6 @@ a real INSERT, UPDATE, or DELETE against the database.
 Shamba Direct is a REST API for a farmer-to-buyer produce marketplace in Kenya. It was built after seeing farmers earn about KES 10 per kg for tomatoes that retailed for KES 60 in Nairobi, with brokers taking the difference. The API gives farmers a direct digital route to the companies that need their produce, and gives other apps read access to the data behind it: active produce listings, current market prices per kg, verified farmer ratings, and headquarters locations. Buyers can also submit an enquiry about a listing, which reaches the farmer who owns it.
 
 Interactive docs: https://kiptoo345.github.io/Shamba-direct-webapp/
-````
 
 ## Authentication
 
