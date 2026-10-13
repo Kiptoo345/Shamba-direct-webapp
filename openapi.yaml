@@ -1,11 +1,28 @@
 openapi: 3.0.3
 info:
   title: Shamba Direct API
-  description: Farmer-to-buyer produce marketplace API.
+  description: "Farmer-to-buyer produce marketplace API for Kenya (Express + MySQL).\nFarmers list produce; buyers (companies)
+    browse, enquire, order and rate.\n\n## Quickstart\n\nStart the API locally (see the README), then:\n\n```\ncurl http://localhost:5000/api/products\n\
+    ```\n\nNo account or token is needed — that call returns the seeded produce listings.\n\n## Authentication\n\n**There
+    is no token authentication yet.** Every endpoint is currently public:\nno `Authorization` header is required or checked.
+    `POST /api/auth/login`\nverifies a phone number + password and returns the user's profile, but it does\n**not** return
+    a token or start a session. Callers identify themselves by\nsending ids in the request body (`farmerId`, `buyerId`). Real
+    authentication\narrives in Week 9; this section will change then.\n\n## Conventions\n\n* Request and response bodies are
+    JSON. Write requests **must** send\n  `Content-Type: application/json`.\n* Field names in **requests** are camelCase (`pricePerKg`);
+    field names in\n  **responses** are snake_case (`price_per_kg`) because they come straight\n  from the database.\n* MySQL
+    `DECIMAL` values (prices, quantities, coordinates) are serialized as\n  **strings**, e.g. `\"45.00\"`.\n* Timestamps are
+    ISO-8601 UTC strings.\n\n## Errors\n\nEvery failed request returns a JSON body with a single `error` string. Success\n\
+    bodies never contain an `error` key — they carry a `message` (and usually an\n`id`). Status codes used: `400` bad/missing
+    input, `401` bad credentials,\n`404` unknown record or route, `409` duplicate account, `500` server/database\nfailure.\n\
+    \n```\n{ \"error\": \"Listing not found\" }\n```\n\nMalformed requests and wrong URLs use the same shape:\n\n| Mistake
+    | Response |\n|---|---|\n| Body is not valid JSON | `400` `{ \"error\": \"Request body is not valid JSON\" }` |\n| Forgot
+    `Content-Type: application/json` (body ignored) | `400` `{ \"error\": \"<field>, <field> are required\" }` |\n| URL does
+    not exist | `404` `{ \"error\": \"Route not found: GET /api/nope\" }` |\n"
   version: "1.0.0"
 servers:
   - url: http://localhost:5000
 
+    description: Local development server (npm start in /server)
 components:
   schemas:
     Error:
@@ -13,41 +30,68 @@ components:
       properties:
         error:
           type: string
+          description: Human-readable reason the request failed
       required: [error]
+      example: {error: "Listing not found"}
 
     Product:
       type: object
       properties:
-        id: { type: integer }
-        farmer_id: { type: integer }
-        name: { type: string }
-        category: { type: string, nullable: true }
-        price_per_kg: { type: string, description: "Decimal, serialized as a string" }
-        quantity_kg: { type: string, description: "Decimal, serialized as a string" }
-        county: { type: string, nullable: true }
-        harvest_note: { type: string, nullable: true }
-        image_emoji: { type: string }
-        status: { type: string, enum: [pending_review, active, sold_out, removed] }
-        views: { type: integer }
-        created_at: { type: string, format: date-time }
-        updated_at: { type: string, format: date-time }
-        farmer_name: { type: string }
-        farmer_verified: { type: integer, description: "0 or 1" }
+        id: {type: integer}
+        farmer_id: {type: integer}
+        name: {type: string}
+        category: {type: string, nullable: true}
+        price_per_kg: {type: string, description: "Decimal, serialized as a string"}
+        quantity_kg: {type: string, description: "Decimal, serialized as a string"}
+        county: {type: string, nullable: true}
+        harvest_note: {type: string, nullable: true}
+        image_emoji: {type: string}
+        status: {type: string, enum: [pending_review, active, sold_out]}
+        views: {type: integer}
+        created_at: {type: string, format: date-time}
+        updated_at: {type: string, format: date-time}
+        farmer_name: {type: string}
+        farmer_verified: {type: integer, description: "0 or 1"}
       required: [id, farmer_id, name, price_per_kg, quantity_kg]
+      example:
+        id: 1
+        farmer_id: 1
+        name: "Roma Tomatoes"
+        category: "Vegetables"
+        price_per_kg: "45.00"
+        quantity_kg: "800.00"
+        county: "Kirinyaga"
+        harvest_note: "Harvested 2 days ago"
+        image_emoji: "🍅"
+        status: "active"
+        views: 48
+        created_at: "2026-10-13T18:34:13.000Z"
+        updated_at: "2026-10-13T18:34:13.000Z"
+        farmer_name: "James Mwangi"
+        farmer_verified: 1
 
     ProductInput:
       type: object
       properties:
-        farmerId: { type: integer }
-        name: { type: string }
-        category: { type: string }
-        pricePerKg: { type: number }
-        quantityKg: { type: number }
-        county: { type: string }
-        harvestNote: { type: string }
-        imageEmoji: { type: string }
-        status: { type: string, enum: [pending_review, active, sold_out, removed] }
+        farmerId: {type: integer}
+        name: {type: string}
+        category: {type: string}
+        pricePerKg: {type: number}
+        quantityKg: {type: number}
+        county: {type: string}
+        harvestNote: {type: string}
+        imageEmoji: {type: string}
+        status: {type: string, enum: [pending_review, active, sold_out], description: Defaults to pending_review. Any 
+            other value returns 500.}
       required: [farmerId, name, pricePerKg, quantityKg]
+      example:
+        farmerId: 1
+        name: "Kale"
+        category: "Vegetables"
+        pricePerKg: 30
+        quantityKg: 200
+        county: "Kirinyaga"
+        harvestNote: "Picked this morning"
 
     ProductPatchInput:
       description: >
@@ -58,205 +102,379 @@ components:
         assume PUT requires the same fields POST does.
       type: object
       properties:
-        name: { type: string }
-        category: { type: string }
-        pricePerKg: { type: number }
-        quantityKg: { type: number }
-        county: { type: string }
-        harvestNote: { type: string }
-        status: { type: string, enum: [pending_review, active, sold_out, removed] }
+        name: {type: string}
+        category: {type: string}
+        pricePerKg: {type: number}
+        quantityKg: {type: number}
+        county: {type: string}
+        harvestNote: {type: string}
+        status: {type: string, enum: [pending_review, active, sold_out]}
+      example: {pricePerKg: 50}
 
     Order:
       type: object
       properties:
-        id: { type: integer }
-        product_id: { type: integer }
-        buyer_id: { type: integer }
-        farmer_id: { type: integer }
-        quantity_kg: { type: string }
-        total_price: { type: string }
-        status: { type: string, enum: [pending, confirmed, delivered, cancelled] }
-        created_at: { type: string, format: date-time }
-        product_name: { type: string }
-        buyer_name: { type: string }
-        buyer_phone: { type: string }
-        buyer_county: { type: string }
-        farmer_name: { type: string }
+        id: {type: integer}
+        product_id: {type: integer}
+        buyer_id: {type: integer}
+        farmer_id: {type: integer}
+        quantity_kg: {type: string}
+        total_price: {type: string}
+        status: {type: string, enum: [pending, confirmed, delivered, cancelled]}
+        created_at: {type: string, format: date-time}
+        product_name: {type: string}
+        buyer_name: {type: string}
+        buyer_phone: {type: string}
+        buyer_county: {type: string}
+        farmer_name: {type: string}
+        buyer_company_name: {type: "string", nullable: true}
+        buyer_delivery_address: {type: "string", nullable: true}
+        updated_at: {type: "string", format: "date-time"}
       required: [id, product_id, buyer_id, farmer_id, status]
+      example:
+        id: 1
+        product_id: 1
+        buyer_id: 4
+        farmer_id: 1
+        quantity_kg: "50.00"
+        total_price: "2250.00"
+        status: "pending"
+        created_at: "2026-10-13T18:34:21.000Z"
+        updated_at: "2026-10-13T18:34:21.000Z"
+        product_name: "Roma Tomatoes"
+        buyer_name: "Test Buyer"
+        buyer_phone: "0700000001"
+        buyer_county: "Nairobi"
+        buyer_company_name: "Test Foods Ltd"
+        buyer_delivery_address:
+        farmer_name: "James Mwangi"
 
     OrderInput:
       type: object
       properties:
-        productId: { type: integer }
-        buyerId: { type: integer }
-        quantityKg: { type: number, exclusiveMinimum: 0, description: "Must be greater than 0" }
+        productId: {type: integer}
+        buyerId: {type: integer}
+        quantityKg: {type: number, description: "Must be greater than 0", minimum: 0, exclusiveMinimum: true}
       required: [productId, buyerId, quantityKg]
+      example: {productId: 1, buyerId: 4, quantityKg: 50}
 
     OrderStatusInput:
       type: object
       properties:
-        status: { type: string, enum: [pending, confirmed, delivered, cancelled] }
+        status: {type: string, enum: [pending, confirmed, delivered, cancelled]}
       required: [status]
+      example: {status: "confirmed"}
 
     Rating:
       type: object
       properties:
-        id: { type: integer }
-        farmer_id: { type: integer }
-        buyer_id: { type: integer }
-        order_id: { type: integer, nullable: true }
-        rating: { type: integer, minimum: 1, maximum: 5 }
-        review_text: { type: string, nullable: true }
-        created_at: { type: string, format: date-time }
+        id: {type: integer}
+        farmer_id: {type: integer}
+        buyer_id: {type: integer}
+        order_id: {type: integer, nullable: true}
+        rating: {type: integer, minimum: 1, maximum: 5}
+        review_text: {type: string, nullable: true}
+        created_at: {type: string, format: date-time}
       required: [id, farmer_id, buyer_id, rating]
+      example:
+        id: 1
+        farmer_id: 1
+        buyer_id: 4
+        order_id: 1
+        rating: 5
+        review_text: "Fresh and on time"
+        created_at: "2026-10-13T18:34:21.000Z"
 
     RatingInput:
       type: object
       properties:
-        farmerId: { type: integer }
-        buyerId: { type: integer }
-        orderId: { type: integer }
-        rating: { type: integer, minimum: 1, maximum: 5 }
-        reviewText: { type: string }
+        farmerId: {type: integer}
+        buyerId: {type: integer}
+        orderId: {type: integer}
+        rating: {type: integer, minimum: 1, maximum: 5}
+        reviewText: {type: string}
       required: [farmerId, buyerId, rating]
+      example:
+        farmerId: 1
+        buyerId: 4
+        orderId: 1
+        rating: 5
+        reviewText: "Fresh and on time"
 
     Enquiry:
       type: object
       properties:
-        id: { type: integer }
-        product_id: { type: integer }
-        buyer_id: { type: integer, nullable: true }
-        farmer_id: { type: integer }
-        message: { type: string }
-        created_at: { type: string, format: date-time }
-        product_name: { type: string }
-        buyer_name: { type: string, nullable: true }
+        id: {type: integer}
+        product_id: {type: integer}
+        buyer_id: {type: integer, nullable: true}
+        farmer_id: {type: integer}
+        message: {type: string}
+        created_at: {type: string, format: date-time}
+        product_name: {type: string}
+        buyer_name: {type: string, nullable: true}
       required: [id, product_id, farmer_id, message]
+      example:
+        id: 1
+        product_id: 1
+        buyer_id: 4
+        farmer_id: 1
+        message: "Can you deliver to Nairobi?"
+        created_at: "2026-10-13T18:34:21.000Z"
+        product_name: "Roma Tomatoes"
+        buyer_name: "Test Buyer"
 
     EnquiryInput:
       type: object
       properties:
-        productId: { type: integer }
-        buyerId: { type: integer }
-        message: { type: string }
+        productId: {type: integer}
+        buyerId: {type: integer}
+        message: {type: string}
       required: [productId, buyerId, message]
+      example: {productId: 1, buyerId: 4, message: "Can you deliver to Nairobi?"}
 
     ContactMessage:
       type: object
       properties:
-        id: { type: integer }
-        name: { type: string }
-        contact_info: { type: string }
-        subject: { type: string, nullable: true }
-        message: { type: string }
-        created_at: { type: string, format: date-time }
+        id: {type: integer}
+        name: {type: string}
+        contact_info: {type: string}
+        subject: {type: string, nullable: true}
+        message: {type: string}
+        created_at: {type: string, format: date-time}
       required: [id, name, contact_info, message]
+      example:
+        id: 1
+        name: "Wanjiru"
+        contact_info: "wanjiru@example.com"
+        subject: "Partnership"
+        message: "Hello, we would like to buy maize."
+        created_at: "2026-10-13T18:34:30.000Z"
 
     ContactMessageInput:
       type: object
       properties:
-        name: { type: string }
-        contactInfo: { type: string }
-        subject: { type: string }
-        message: { type: string }
+        name: {type: string}
+        contactInfo: {type: string}
+        subject: {type: string}
+        message: {type: string}
       required: [name, contactInfo, message]
+      example:
+        name: "Wanjiru"
+        contactInfo: "wanjiru@example.com"
+        subject: "Partnership"
+        message: "Hello, we would like to buy maize."
 
     Headquarters:
       type: object
       properties:
-        id: { type: integer }
-        region_name: { type: string }
-        county: { type: string }
-        address: { type: string, nullable: true }
-        latitude: { type: number, nullable: true }
-        longitude: { type: number, nullable: true }
+        id: {type: integer}
+        region_name: {type: string}
+        county: {type: string}
+        address: {type: string, nullable: true}
+        latitude: {type: "string", nullable: true, description: "Decimal serialized as a string, e.g. \"0.282700\""}
+        longitude: {type: "string", nullable: true, description: "Decimal serialized as a string, e.g. \"34.751900\""}
+        created_at: {type: "string", format: "date-time"}
       required: [id, region_name, county]
+      example:
+        id: 1
+        region_name: "Shamba Direct HQ"
+        county: "Nairobi"
+        address: "2nd Floor, Ngong Road Plaza, Ngong Road, Nairobi"
+        latitude:
+        longitude:
+        created_at: "2026-10-13T18:34:13.000Z"
 
     HeadquartersInput:
       type: object
       properties:
-        regionName: { type: string }
-        county: { type: string }
-        address: { type: string }
-        latitude: { type: number }
-        longitude: { type: number }
+        regionName: {type: string}
+        county: {type: string}
+        address: {type: string}
+        latitude: {type: number}
+        longitude: {type: number}
       required: [regionName, county]
+      example:
+        regionName: "Western Hub"
+        county: "Kakamega"
+        address: "Mumias Road"
+        latitude: 0.2827
+        longitude: 34.7519
 
     MarketPrice:
       type: object
       properties:
-        id: { type: integer }
-        crop_name: { type: string }
-        price_per_kg: { type: string }
-        county: { type: string, nullable: true }
+        id: {type: integer}
+        crop_name: {type: string}
+        price_per_kg: {type: string}
+        county: {type: string, nullable: true}
+        updated_at: {type: "string", format: "date-time"}
       required: [id, crop_name, price_per_kg]
+      example:
+        id: 3
+        crop_name: "Potatoes"
+        price_per_kg: "28.00"
+        county: "Nyandarua"
+        updated_at: "2026-10-13T18:34:13.000Z"
 
     MarketPriceInput:
       type: object
       properties:
-        cropName: { type: string }
-        pricePerKg: { type: number }
-        county: { type: string }
+        cropName: {type: string}
+        pricePerKg: {type: number}
+        county: {type: string}
       required: [cropName, pricePerKg]
+      example: {cropName: "Cabbage", pricePerKg: 22.5, county: "Nakuru"}
 
     User:
       type: object
       properties:
-        id: { type: integer }
-        full_name: { type: string }
-        email: { type: string, nullable: true }
-        phone_number: { type: string }
-        role: { type: string, enum: [farmer, buyer] }
-        county: { type: string, nullable: true }
-        is_verified: { type: integer }
+        id: {type: integer}
+        full_name: {type: string}
+        email: {type: string, nullable: true}
+        phone_number: {type: string}
+        role: {type: string, enum: [farmer, buyer], description: Registration accepts farmer or buyer.}
+        county: {type: string, nullable: true}
+        is_verified: {type: integer}
+        created_at: {type: "string", format: "date-time"}
+        updated_at: {type: "string", format: "date-time"}
+        profile:
+          type: "object"
+          nullable: true
+          description: "Farmers: { farm_size, main_crops }. Buyers: { company_name, business_type, delivery_address }."
+          additionalProperties: true
       required: [id, full_name, phone_number, role]
+      example:
+        id: 4
+        full_name: "Test Buyer"
+        email:
+        phone_number: "0700000001"
+        role: "buyer"
+        county: "Nairobi"
+        is_verified: 0
+        created_at: "2026-10-13T18:34:13.000Z"
+        updated_at: "2026-10-13T18:34:13.000Z"
+        profile:
+          company_name: "Test Foods Ltd"
+          business_type:
+          delivery_address:
 
     RegisterInput:
       type: object
       properties:
-        role: { type: string, enum: [farmer, buyer] }
-        fullName: { type: string }
-        email: { type: string }
-        phoneNumber: { type: string }
-        password: { type: string }
-        county: { type: string }
-        farmSize: { type: string }
-        nationalId: { type: string }
-        mainCrops: { type: string }
-        companyName: { type: string }
-        kraPin: { type: string }
-        businessType: { type: string }
-        productsNeeded: { type: string }
-        deliveryAddress: { type: string }
+        role: {type: string, enum: [farmer, buyer]}
+        fullName: {type: string}
+        email: {type: string}
+        phoneNumber: {type: string}
+        password: {type: string}
+        county: {type: string}
+        farmSize: {type: string}
+        nationalId: {type: string}
+        mainCrops: {type: string}
+        companyName: {type: string}
+        kraPin: {type: string}
+        businessType: {type: string}
+        productsNeeded: {type: string}
+        deliveryAddress: {type: string}
       required: [role, fullName, phoneNumber, password]
+      example:
+        role: "buyer"
+        fullName: "Test Buyer"
+        phoneNumber: "0700000001"
+        password: "secret123"
+        county: "Nairobi"
+        companyName: "Test Foods Ltd"
 
     LoginInput:
       type: object
       properties:
-        phoneNumber: { type: string }
-        password: { type: string }
+        phoneNumber: {type: string}
+        password: {type: string}
       required: [phoneNumber, password]
+      example: {phoneNumber: "0700000001", password: "secret123"}
+    MessageResponse:
+      type: "object"
+      properties:
+        message: {type: "string"}
+      required:
+        - "message"
+  responses:
+    ServerError:
+      description: "Unexpected server or database failure (e.g. a foreign key that does not exist, or an invalid enum value).
+        The message names the operation that failed."
+      content:
+        application/json:
+          schema: {$ref: "#/components/schemas/Error"}
+          example: {error: "Failed to add listing"}
 
 paths:
+  /:
+    get:
+      tags: [System]
+      operationId: healthCheck
+      summary: "Health check"
+      description: "Plain-text liveness check. Does not touch the database."
+      responses:
+        '200':
+          description: "The API process is up"
+          content:
+            text/plain:
+              schema: {type: "string"}
+              example: "Shamba Direct API is running..."
+  /api/test-db:
+    get:
+      tags: [System]
+      operationId: databaseCheck
+      summary: "Database connectivity check"
+      description: "Runs `SELECT 1 + 1` against MySQL. Use it to confirm your `.env` credentials work."
+      responses:
+        '200':
+          description: "Database reachable"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  message: {type: "string"}
+                  data:
+                    type: "array"
+                    items: {type: "object"}
+              example:
+                message: "Database connected successfully!"
+                data:
+                  - {result: 2}
+        '500':
+          description: "Database unreachable (wrong credentials, MySQL not running, schema not imported)"
+          content:
+            application/json:
+              schema:
+                type: "object"
+                properties:
+                  error: {type: "string"}
+                  details: {type: "string"}
+              example:
+                error: "Database connection failed"
+                details: "Access denied for user 'root'@'localhost'"
   /api/products:
     get:
+      tags: [Products]
+      operationId: listProducts
       summary: List products (filterable)
       parameters:
         - in: query
           name: county
-          schema: { type: string }
+          schema: {type: string}
         - in: query
           name: category
-          schema: { type: string }
+          schema: {type: string}
         - in: query
           name: farmerId
-          schema: { type: integer }
+          schema: {type: integer}
         - in: query
           name: status
-          schema: { type: string }
+          schema: {type: string}
         - in: query
           name: minQuantity
-          schema: { type: number }
+          schema: {type: number}
       responses:
         "200":
           description: Array of products (empty array if none match)
@@ -264,14 +482,17 @@ paths:
             application/json:
               schema:
                 type: array
-                items: { $ref: '#/components/schemas/Product' }
+                items: {$ref: '#/components/schemas/Product'}
+        '500': {$ref: "#/components/responses/ServerError"}
     post:
+      tags: [Products]
+      operationId: createProduct
       summary: Create a listing
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/ProductInput' }
+            schema: {$ref: '#/components/schemas/ProductInput'}
       responses:
         "201":
           description: Created
@@ -280,79 +501,111 @@ paths:
               schema:
                 type: object
                 properties:
-                  message: { type: string }
-                  id: { type: integer }
+                  message: {type: string}
+                  id: {type: integer}
+              example: {message: "Listing created successfully", id: 3}
         "400":
           description: Missing required fields
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "farmerId, name, pricePerKg and quantityKg are required"}
+        '500': {$ref: "#/components/responses/ServerError"}
   /api/products/{id}:
     get:
+      tags: [Products]
+      operationId: getProduct
       summary: Get a single product (increments its view count as a side effect)
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: integer }
+          schema: {type: integer}
+          description: Numeric id of the record (the `id` returned when it was created)
+          example: 1
       responses:
         "200":
           description: The product
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Product' }
+              schema: {$ref: '#/components/schemas/Product'}
         "404":
           description: Not found
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Listing not found"}
+        '500': {$ref: "#/components/responses/ServerError"}
     put:
+      tags: [Products]
+      operationId: updateProduct
       summary: Update a listing (any subset of fields; unset fields are left unchanged)
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: integer }
+          schema: {type: integer}
+          description: Numeric id of the record (the `id` returned when it was created)
+          example: 1
       requestBody:
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/ProductPatchInput' }
+            schema: {$ref: '#/components/schemas/ProductPatchInput'}
+        required: false
       responses:
-        "200": { description: Updated }
+        "200":
+          description: "Updated"
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MessageResponse"}
+              example: {message: "Listing updated successfully"}
         "404":
           description: Not found
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Listing not found"}
+        '500': {$ref: "#/components/responses/ServerError"}
     delete:
+      tags: [Products]
+      operationId: deleteProduct
       summary: Delete a listing
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: integer }
+          schema: {type: integer}
+          description: Numeric id of the record (the `id` returned when it was created)
+          example: 1
       responses:
-        "200": { description: Deleted }
+        "200":
+          description: "Deleted"
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MessageResponse"}
+              example: {message: "Listing deleted successfully"}
         "404":
           description: Not found
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Listing not found"}
+        '500': {$ref: "#/components/responses/ServerError"}
   /api/orders:
     get:
+      tags: [Orders]
+      operationId: listOrders
       summary: List orders (filterable by farmerId, buyerId, status)
       parameters:
         - in: query
           name: farmerId
-          schema: { type: integer }
+          schema: {type: integer}
         - in: query
           name: buyerId
-          schema: { type: integer }
+          schema: {type: integer}
         - in: query
           name: status
-          schema: { type: string }
+          schema: {type: string}
       responses:
         "200":
           description: Array of orders (empty array if none match)
@@ -360,14 +613,17 @@ paths:
             application/json:
               schema:
                 type: array
-                items: { $ref: '#/components/schemas/Order' }
+                items: {$ref: '#/components/schemas/Order'}
+        '500': {$ref: "#/components/responses/ServerError"}
     post:
+      tags: [Orders]
+      operationId: createOrder
       summary: Place an order against a listing
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/OrderInput' }
+            schema: {$ref: '#/components/schemas/OrderInput'}
       responses:
         "201":
           description: Created
@@ -376,70 +632,97 @@ paths:
               schema:
                 type: object
                 properties:
-                  message: { type: string }
-                  id: { type: integer }
-                  totalPrice: { type: number }
+                  message: {type: string}
+                  id: {type: integer}
+                  totalPrice: {type: number}
+              example: {message: "Order placed successfully", id: 1, totalPrice: 2250}
         "400":
           description: Missing fields, or quantity exceeds availability
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Requested quantity exceeds what is available"}
         "404":
           description: Listing not found
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Listing not found"}
+        '500': {$ref: "#/components/responses/ServerError"}
   /api/orders/{id}:
     put:
+      tags: [Orders]
+      operationId: updateOrderStatus
       summary: Update an order's status
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: integer }
+          schema: {type: integer}
+          description: Numeric id of the record (the `id` returned when it was created)
+          example: 1
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/OrderStatusInput' }
+            schema: {$ref: '#/components/schemas/OrderStatusInput'}
       responses:
-        "200": { description: Updated }
+        "200":
+          description: "Updated"
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MessageResponse"}
+              example: {message: "Order status updated"}
         "400":
           description: status not one of the allowed values
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "status must be one of: pending, confirmed, delivered, cancelled"}
         "404":
           description: Not found
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Order not found"}
+        '500': {$ref: "#/components/responses/ServerError"}
     delete:
+      tags: [Orders]
+      operationId: deleteOrder
       summary: Delete an order
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: integer }
+          schema: {type: integer}
+          description: Numeric id of the record (the `id` returned when it was created)
+          example: 1
       responses:
-        "200": { description: Deleted }
+        "200":
+          description: "Deleted"
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MessageResponse"}
+              example: {message: "Order deleted successfully"}
         "404":
           description: Not found
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Order not found"}
+        '500': {$ref: "#/components/responses/ServerError"}
   /api/ratings:
     get:
+      tags: [Ratings]
+      operationId: listRatings
       summary: List ratings. With farmerId, also returns an aggregate average and review count.
       parameters:
         - in: query
           name: farmerId
-          schema: { type: integer }
+          schema: {type: integer}
         - in: query
           name: buyerId
-          schema: { type: integer }
+          schema: {type: integer}
       responses:
         "200":
           description: >
@@ -453,18 +736,26 @@ paths:
                     properties:
                       ratings:
                         type: array
-                        items: { $ref: '#/components/schemas/Rating' }
-                      averageRating: { type: number }
-                      reviewCount: { type: integer }
+                        items: {$ref: "#/components/schemas/Rating"}
+                      averageRating:
+                        oneOf:
+                          - {type: "string", example: "4.5"}
+                          - {type: "integer", enum: [0]}
+                        description: "One-decimal average serialized as a string (e.g. \"4.5\"). When the farmer has no ratings
+                          yet it is the number 0."
+                      reviewCount: {type: integer}
                   - type: array
-                    items: { $ref: '#/components/schemas/Rating' }
+                    items: {$ref: '#/components/schemas/Rating'}
+        '500': {$ref: "#/components/responses/ServerError"}
     post:
+      tags: [Ratings]
+      operationId: createRating
       summary: Submit a rating for a farmer
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/RatingInput' }
+            schema: {$ref: '#/components/schemas/RatingInput'}
       responses:
         "201":
           description: Created
@@ -473,40 +764,54 @@ paths:
               schema:
                 type: object
                 properties:
-                  message: { type: string }
-                  id: { type: integer }
+                  message: {type: string}
+                  id: {type: integer}
+              example: {message: "Rating submitted successfully", id: 1}
         "400":
           description: Missing fields, or rating outside 1-5
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "rating must be between 1 and 5"}
+        '500': {$ref: "#/components/responses/ServerError"}
   /api/ratings/{id}:
     delete:
+      tags: [Ratings]
+      operationId: deleteRating
       summary: Delete a rating
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: integer }
+          schema: {type: integer}
+          description: Numeric id of the record (the `id` returned when it was created)
+          example: 1
       responses:
-        "200": { description: Deleted }
+        "200":
+          description: "Deleted"
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MessageResponse"}
+              example: {message: "Rating deleted successfully"}
         "404":
           description: Not found
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Rating not found"}
+        '500': {$ref: "#/components/responses/ServerError"}
   /api/enquiries:
     get:
+      tags: [Enquiries]
+      operationId: listEnquiries
       summary: List enquiries (filterable by farmerId, productId)
       parameters:
         - in: query
           name: farmerId
-          schema: { type: integer }
+          schema: {type: integer}
         - in: query
           name: productId
-          schema: { type: integer }
+          schema: {type: integer}
       responses:
         "200":
           description: Array of enquiries (empty array if none match)
@@ -514,14 +819,17 @@ paths:
             application/json:
               schema:
                 type: array
-                items: { $ref: '#/components/schemas/Enquiry' }
+                items: {$ref: '#/components/schemas/Enquiry'}
+        '500': {$ref: "#/components/responses/ServerError"}
     post:
+      tags: [Enquiries]
+      operationId: createEnquiry
       summary: Send an enquiry to a farmer about a listing
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/EnquiryInput' }
+            schema: {$ref: '#/components/schemas/EnquiryInput'}
       responses:
         "201":
           description: Created
@@ -530,37 +838,52 @@ paths:
               schema:
                 type: object
                 properties:
-                  message: { type: string }
-                  id: { type: integer }
+                  message: {type: string}
+                  id: {type: integer}
+              example: {message: "Enquiry sent to farmer", id: 1}
         "400":
           description: Missing fields
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "You must be logged in to contact a farmer. productId, buyerId and message are required"}
         "404":
           description: Listing not found
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Listing not found"}
+        '500': {$ref: "#/components/responses/ServerError"}
   /api/enquiries/{id}:
     delete:
+      tags: [Enquiries]
+      operationId: deleteEnquiry
       summary: Delete an enquiry
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: integer }
+          schema: {type: integer}
+          description: Numeric id of the record (the `id` returned when it was created)
+          example: 1
       responses:
-        "200": { description: Deleted }
+        "200":
+          description: "Deleted"
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MessageResponse"}
+              example: {message: "Enquiry deleted successfully"}
         "404":
           description: Not found
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Enquiry not found"}
+        '500': {$ref: "#/components/responses/ServerError"}
   /api/contact:
     get:
+      tags: [Contact]
+      operationId: listContactMessages
       summary: List contact messages (admin inbox)
       responses:
         "200":
@@ -569,14 +892,17 @@ paths:
             application/json:
               schema:
                 type: array
-                items: { $ref: '#/components/schemas/ContactMessage' }
+                items: {$ref: '#/components/schemas/ContactMessage'}
+        '500': {$ref: "#/components/responses/ServerError"}
     post:
+      tags: [Contact]
+      operationId: createContactMessage
       summary: Submit the About & Contact page form
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/ContactMessageInput' }
+            schema: {$ref: '#/components/schemas/ContactMessageInput'}
       responses:
         "201":
           description: Created
@@ -585,32 +911,46 @@ paths:
               schema:
                 type: object
                 properties:
-                  message: { type: string }
-                  messageId: { type: integer }
+                  message: {type: string}
+                  messageId: {type: integer}
+              example: {message: "Inquiry submitted successfully", messageId: 1}
         "400":
           description: Missing fields
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "name, contactInfo and message are required"}
+        '500': {$ref: "#/components/responses/ServerError"}
   /api/contact/{id}:
     delete:
+      tags: [Contact]
+      operationId: deleteContactMessage
       summary: Delete a contact message
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: integer }
+          schema: {type: integer}
+          description: Numeric id of the record (the `id` returned when it was created)
+          example: 1
       responses:
-        "200": { description: Deleted }
+        "200":
+          description: "Deleted"
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MessageResponse"}
+              example: {message: "Message deleted successfully"}
         "404":
           description: Not found
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Message not found"}
+        '500': {$ref: "#/components/responses/ServerError"}
   /api/headquarters:
     get:
+      tags: [Headquarters]
+      operationId: listHeadquarters
       summary: List regional headquarters
       responses:
         "200":
@@ -619,14 +959,17 @@ paths:
             application/json:
               schema:
                 type: array
-                items: { $ref: '#/components/schemas/Headquarters' }
+                items: {$ref: '#/components/schemas/Headquarters'}
+        '500': {$ref: "#/components/responses/ServerError"}
     post:
+      tags: [Headquarters]
+      operationId: createHeadquarters
       summary: Add a headquarters hub
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/HeadquartersInput' }
+            schema: {$ref: '#/components/schemas/HeadquartersInput'}
       responses:
         "201":
           description: Created
@@ -635,73 +978,105 @@ paths:
               schema:
                 type: object
                 properties:
-                  message: { type: string }
-                  id: { type: integer }
+                  message: {type: string}
+                  id: {type: integer}
+              example: {message: "Headquarters added successfully", id: 2}
         "400":
           description: Missing fields
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "regionName and county are required"}
+        '500': {$ref: "#/components/responses/ServerError"}
   /api/headquarters/{id}:
     get:
+      tags: [Headquarters]
+      operationId: getHeadquarters
       summary: Get a single headquarters hub
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: integer }
+          schema: {type: integer}
+          description: Numeric id of the record (the `id` returned when it was created)
+          example: 1
       responses:
         "200":
           description: The headquarters record
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Headquarters' }
+              schema: {$ref: '#/components/schemas/Headquarters'}
         "404":
           description: Not found
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Headquarters not found"}
+        '500': {$ref: "#/components/responses/ServerError"}
     put:
+      tags: [Headquarters]
+      operationId: updateHeadquarters
       summary: Update a headquarters hub
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: integer }
+          schema: {type: integer}
+          description: Numeric id of the record (the `id` returned when it was created)
+          example: 1
       requestBody:
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/HeadquartersInput' }
+            schema: {$ref: '#/components/schemas/HeadquartersInput'}
+        required: false
       responses:
-        "200": { description: Updated }
+        "200":
+          description: "Updated"
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MessageResponse"}
+              example: {message: "Headquarters updated successfully"}
         "404":
           description: Not found
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Headquarters not found"}
+        '500': {$ref: "#/components/responses/ServerError"}
     delete:
+      tags: [Headquarters]
+      operationId: deleteHeadquarters
       summary: Delete a headquarters hub
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: integer }
+          schema: {type: integer}
+          description: Numeric id of the record (the `id` returned when it was created)
+          example: 1
       responses:
-        "200": { description: Deleted }
+        "200":
+          description: "Deleted"
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MessageResponse"}
+              example: {message: "Headquarters deleted successfully"}
         "404":
           description: Not found
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Headquarters not found"}
+        '500': {$ref: "#/components/responses/ServerError"}
   /api/market-prices:
     get:
+      tags: [Market Prices]
+      operationId: listMarketPrices
       summary: List market prices (optionally filtered by county)
       parameters:
         - in: query
           name: county
-          schema: { type: string }
+          schema: {type: string}
       responses:
         "200":
           description: Array of market prices
@@ -709,14 +1084,17 @@ paths:
             application/json:
               schema:
                 type: array
-                items: { $ref: '#/components/schemas/MarketPrice' }
+                items: {$ref: '#/components/schemas/MarketPrice'}
+        '500': {$ref: "#/components/responses/ServerError"}
     post:
+      tags: [Market Prices]
+      operationId: createMarketPrice
       summary: Add a market price point
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/MarketPriceInput' }
+            schema: {$ref: '#/components/schemas/MarketPriceInput'}
       responses:
         "201":
           description: Created
@@ -725,22 +1103,28 @@ paths:
               schema:
                 type: object
                 properties:
-                  message: { type: string }
-                  id: { type: integer }
+                  message: {type: string}
+                  id: {type: integer}
+              example: {message: "Market price added successfully", id: 4}
         "400":
           description: Missing fields
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "cropName and pricePerKg are required"}
+        '500': {$ref: "#/components/responses/ServerError"}
   /api/market-prices/{id}:
     put:
+      tags: [Market Prices]
+      operationId: updateMarketPrice
       summary: Update a market price's value
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: integer }
+          schema: {type: integer}
+          description: Numeric id of the record (the `id` returned when it was created)
+          example: 1
       requestBody:
         required: true
         content:
@@ -748,43 +1132,63 @@ paths:
             schema:
               type: object
               properties:
-                pricePerKg: { type: number }
+                pricePerKg: {type: number}
               required: [pricePerKg]
       responses:
-        "200": { description: Updated }
+        "200":
+          description: "Updated"
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MessageResponse"}
+              example: {message: "Market price updated successfully"}
         "400":
           description: pricePerKg is required
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "pricePerKg is required"}
         "404":
           description: Not found
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Price entry not found"}
+        '500': {$ref: "#/components/responses/ServerError"}
     delete:
+      tags: [Market Prices]
+      operationId: deleteMarketPrice
       summary: Delete a market price entry
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: integer }
+          schema: {type: integer}
+          description: Numeric id of the record (the `id` returned when it was created)
+          example: 1
       responses:
-        "200": { description: Deleted }
+        "200":
+          description: "Deleted"
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MessageResponse"}
+              example: {message: "Market price deleted successfully"}
         "404":
           description: Not found
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Price entry not found"}
+        '500': {$ref: "#/components/responses/ServerError"}
   /api/auth/register:
     post:
+      tags: [Auth]
+      operationId: registerUser
       summary: Register a new farmer or buyer account
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/RegisterInput' }
+            schema: {$ref: '#/components/schemas/RegisterInput'}
       responses:
         "201":
           description: Created
@@ -793,27 +1197,32 @@ paths:
               schema:
                 type: object
                 properties:
-                  message: { type: string }
-                  userId: { type: integer }
+                  message: {type: string}
+                  userId: {type: integer}
+              example: {message: "User registered successfully", userId: 4}
         "400":
           description: Missing required fields
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "fullName, phoneNumber, password and role are required"}
         "409":
           description: Phone number or email already registered
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "An account with that phone number or email already exists"}
+        '500': {$ref: "#/components/responses/ServerError"}
   /api/auth/login:
     post:
+      tags: [Auth]
+      operationId: loginUser
       summary: Log in with phone number and password
       requestBody:
         required: true
         content:
           application/json:
-            schema: { $ref: '#/components/schemas/LoginInput' }
+            schema: {$ref: '#/components/schemas/LoginInput'}
       responses:
         "200":
           description: Logged in
@@ -822,58 +1231,121 @@ paths:
               schema:
                 type: object
                 properties:
-                  message: { type: string }
-                  user: { $ref: '#/components/schemas/User' }
+                  message: {type: string}
+                  user: {$ref: '#/components/schemas/User'}
+              example:
+                message: "Login successful"
+                user:
+                  id: 4
+                  full_name: "Test Buyer"
+                  email:
+                  phone_number: "0700000001"
+                  role: "buyer"
+                  county: "Nairobi"
+                  is_verified: 0
+                  created_at: "2026-10-13T18:34:13.000Z"
+                  updated_at: "2026-10-13T18:34:13.000Z"
+                  profile:
+                    company_name: "Test Foods Ltd"
+                    business_type:
+                    delivery_address:
         "400":
           description: Missing phoneNumber or password
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "phoneNumber and password are required"}
         "401":
           description: Invalid credentials
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
-
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Invalid credentials"}
+        '500': {$ref: "#/components/responses/ServerError"}
+      description: Verifies phone number + password and returns the user's profile. **It does not return a token** — 
+        there is no session or token auth yet (arrives in Week 9).
   /api/auth/users/{id}:
     put:
+      tags: [Auth]
+      operationId: updateUser
       summary: Update a user's profile
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: integer }
+          schema: {type: integer}
+          description: Numeric id of the record (the `id` returned when it was created)
+          example: 1
       requestBody:
         content:
           application/json:
             schema:
               type: object
               properties:
-                fullName: { type: string }
-                email: { type: string }
-                county: { type: string }
-                farmSize: { type: string }
-                mainCrops: { type: string }
-                businessType: { type: string }
-                deliveryAddress: { type: string }
+                fullName: {type: string}
+                email: {type: string}
+                county: {type: string}
+                farmSize: {type: string}
+                mainCrops: {type: string}
+                businessType: {type: string}
+                deliveryAddress: {type: string}
+        required: false
       responses:
-        "200": { description: Updated }
+        "200":
+          description: "Updated"
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MessageResponse"}
+              example: {message: "Profile updated successfully"}
         "404":
           description: Not found
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "User not found"}
+        '500': {$ref: "#/components/responses/ServerError"}
     delete:
+      tags: [Auth]
+      operationId: deleteUser
       summary: Delete a user account
       parameters:
         - in: path
           name: id
           required: true
-          schema: { type: integer }
+          schema: {type: integer}
+          description: Numeric id of the record (the `id` returned when it was created)
+          example: 1
       responses:
-        "200": { description: Deleted }
+        "200":
+          description: "Deleted"
+          content:
+            application/json:
+              schema: {$ref: "#/components/schemas/MessageResponse"}
+              example: {message: "Account deleted successfully"}
         "404":
           description: Not found
           content:
             application/json:
-              schema: { $ref: '#/components/schemas/Error' }
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "User not found"}
+        '500': {$ref: "#/components/responses/ServerError"}
+tags:
+  - name: "System"
+    description: "Health and connectivity checks."
+  - name: "Auth"
+    description: "Register, log in, update or delete a user account."
+  - name: "Products"
+    description: "Produce listings posted by farmers."
+  - name: "Orders"
+    description: "A buyer's order against a listing."
+  - name: "Ratings"
+    description: "Buyer ratings of farmers."
+  - name: "Enquiries"
+    description: "'Contact Farmer' messages about a listing."
+  - name: "Contact"
+    description: "The public About & Contact form (admin inbox)."
+  - name: "Headquarters"
+    description: "Regional hubs (used by the SettleIn integration)."
+  - name: "Market Prices"
+    description: "Scheduled commodity price feed."
+security: []
