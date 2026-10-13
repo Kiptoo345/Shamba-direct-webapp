@@ -3,7 +3,7 @@ const router = express.Router();
 const db = require('../db');
 
 // -----------------------------------------------------------------------
-// GET /api/products  (SELECT — supports optional filters used by the
+// GET /api/listings  (SELECT — supports optional filters used by the
 // Marketplace and Dashboard pages)
 // -----------------------------------------------------------------------
 router.get('/', async (req, res) => {
@@ -44,12 +44,12 @@ router.get('/', async (req, res) => {
 });
 
 // -----------------------------------------------------------------------
-// GET /api/products/:id  (SELECT single + increments view count)
+// GET /api/listings/:id  (SELECT single + increments view count)
 // -----------------------------------------------------------------------
 router.get('/:id', async (req, res) => {
   const { id } = req.params;
   if (!Number.isInteger(Number(id))) {
-    return res.status(400).json({ error: 'listing id must be an integer' });
+    return res.status(400).json({ error: 'listing_id must be an integer' });
   }
   try {
     const [rows] = await db.query(
