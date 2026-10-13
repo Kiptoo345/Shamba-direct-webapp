@@ -22,51 +22,57 @@ The documented endpoints do not return private fields such as phone numbers, nat
 
 
 
-## 1. Set up the database
+## Run the API locally
+
+### Prerequisites
+
+- Node.js 18 or later
+- MySQL running locally, with a user that can create databases
+
+### 1. Clone the repo
+
+```bash
+git clone https://github.com/Kiptoo345/Shamba-direct-webapp.git
+cd Shamba-direct-webapp
+```
+
+### 2. Create the database
 
 ```bash
 mysql -u root -p < server/sql/schema.sql
 ```
 
-This creates the `shamba_direct_db` database, every table, and a small
-amount of seed data so the Marketplace/Dashboard aren't empty on first run.
+On Windows PowerShell, `<` doesn't work. Use:
 
-## 2. Run the API
+```powershell
+mysql -u root -p -e "source server/sql/schema.sql"
+```
+
+This creates the `shamba_direct_db` database, all tables and seed data.
+
+### 3. Configure the server
 
 ```bash
 cd server
-cp .env.example .env      # edit DB_USER / DB_PASSWORD if needed
-npm install
-npm run dev                # nodemon, or `npm start` for plain node
+cp .env.example .env
 ```
 
-The API listens on `http://localhost:5000` by default.
+On Windows PowerShell: `copy .env.example .env`
 
-## Run the tests
+Open `.env` and set DB_USER and DB_PASSWORD, to match your MySQL login in the example. Leave the rest as they are.
 
-```bash
-cd server
-npm test
-```
-
-The tests call the real API and need the database from step 1, seeded with `schema.sql`.
-````
-
-## 3. Run the React app
+### 4. Install and start
 
 ```bash
-cd client
-cp .env.example .env       # only needed if your API isn't on localhost:5000
 npm install
 npm start
 ```
 
-The app opens on `http://localhost:3000` and talks to the API via
-`REACT_APP_API_URL` (defaults to `http://localhost:5000/api`).
+You should see `Server is running on http://localhost:5000`.
 
-## Quickstart
+### 5. Check that it works
 
-Start the API (see "Run the API" above), then run this in a new terminal:
+In a new terminal:
 
 ```bash
 curl http://localhost:5000/api/listings
@@ -387,7 +393,6 @@ Shamba-direct-webapp/
 | Delete an order                            | `DELETE /api/orders/:id`           | DELETE `orders` |
 | "Contact Farmer" (Marketplace)              | `POST /api/enquiries`              | INSERT `enquiries` |
 | Contact / About page form                  | `POST /api/contact`                | INSERT `contact_messages` |
-
 | Headquarters CRUD (admin/back office)       | `/api/headquarters`                | INSERT/UPDATE/DELETE `headquarters` |
 | Market price feed CRUD (admin/pipeline)     | `/api/market-prices`               | INSERT/UPDATE/DELETE `market_prices` |
 
