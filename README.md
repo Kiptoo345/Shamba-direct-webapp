@@ -57,13 +57,13 @@ Open `.env` and set DB_USER and DB_PASSWORD, to match your MySQL login in the ex
 
 ### 4. Install and start
 
-Run the tests against the seeded database:
+From the repository root, run the API tests against the seeded database:
 
 ```bash
 npm test
 ```
 
-The tests call the real API and need the database from step 1, seeded with `schema.sql`.
+The root `npm test` command forwards to the server's Jest suite. The tests call the real API and need the database from step 1, seeded with `schema.sql`.
 
 Install and start the API:
 

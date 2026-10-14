@@ -2,10 +2,23 @@ const request = require('supertest');
 const app = require('../app');
 const db = require('../db');
 
-afterAll(async () => { await db.end(); });
+let FARMER_ID;
+let BUYER_ID;
+const createdRatingIds = [];
 
-const FARMER_ID = 2; // Grace Achieng — seeded with no ratings yet, good for the "empty" edge case
-const BUYER_ID = 3;
+beforeAll(async () => {
+  const [[farmer]] = await db.query("SELECT id FROM users WHERE role = 'farmer' ORDER BY id LIMIT 1");
+  const [[buyer]] = await db.query("SELECT id FROM users WHERE role = 'buyer' ORDER BY id LIMIT 1");
+  FARMER_ID = farmer.id;
+  BUYER_ID = buyer.id;
+});
+
+afterAll(async () => {
+  for (const id of createdRatingIds) {
+    await db.query('DELETE FROM farmer_ratings WHERE id = ?', [id]);
+  }
+  await db.end();
+});
 
 describe('POST /api/ratings', () => {
   it('validation rejection: missing fields returns 400', async () => {
@@ -26,6 +39,7 @@ describe('POST /api/ratings', () => {
     });
     expect(res.status).toBe(201);
     expect(res.body).toHaveProperty('id');
+    createdRatingIds.push(res.body.id);
   });
 });
 
@@ -51,7 +65,9 @@ describe('GET /api/ratings?farmerId=', () => {
 describe('DELETE /api/ratings/:id', () => {
   it('happy path: deletes a rating', async () => {
     const createRes = await request(app).post('/api/ratings').send({ farmerId: FARMER_ID, buyerId: BUYER_ID, rating: 3 });
+    createdRatingIds.push(createRes.body.id);
     const delRes = await request(app).delete(`/api/ratings/${createRes.body.id}`);
+    createdRatingIds.splice(createdRatingIds.indexOf(createRes.body.id), 1);
     expect(delRes.status).toBe(200);
   });
 

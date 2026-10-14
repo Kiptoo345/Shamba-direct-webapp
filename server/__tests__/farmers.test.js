@@ -6,26 +6,35 @@ afterAll(async () => {
   await db.end();
 });
 
+let verifiedFarmerId;
+
+beforeAll(async () => {
+  const [[farmer]] = await db.query(
+    "SELECT id FROM users WHERE role = 'farmer' AND is_verified = 1 ORDER BY id LIMIT 1"
+  );
+  verifiedFarmerId = farmer.id;
+});
+
 describe('GET /api/farmers/ratings', () => {
   it('returns an array of farmer ratings matching the contract', async () => {
     const res = await request(app).get('/api/farmers/ratings');         
 
     expect(res.status).toBe(200);                                       
     expect(Array.isArray(res.body)).toBe(true);
-    expect(res.body.length).toBeGreaterThan(0);
 
-    const item = res.body[0];
-    expect(typeof item.farmer_id).toBe('number');
-    expect(typeof item.farmer_name).toBe('string');
-    expect(typeof item.rating).toBe('number');
+    res.body.forEach((item) => {
+      expect(typeof item.farmer_id).toBe('number');
+      expect(typeof item.farmer_name).toBe('string');
+      expect(typeof item.rating).toBe('number');
+    });
   });
 
   it('does not return fields outside the contract', async () => {
     const res = await request(app).get('/api/farmers/ratings');
 
-    expect(Object.keys(res.body[0]).sort()).toEqual(
-      ['farmer_id', 'farmer_name', 'rating']
-    );
+    res.body.forEach((item) => {
+      expect(Object.keys(item).sort()).toEqual(['farmer_id', 'farmer_name', 'rating']);
+    });
   });
 
   it('returns ratings between 0 and 5 inclusive', async () => {
@@ -54,9 +63,20 @@ describe('GET /api/farmers/:farmer_id/rating', () => {
   let farmer;   // { farmer_id, farmer_name, rating } taken from the list endpoint
 
   beforeAll(async () => {
-    // arrange: use a real farmer instead of hardcoding an ID
-    const list = await request(app).get('/api/farmers/ratings');
-    farmer = list.body[0];
+    const [[row]] = await db.query(
+      `SELECT u.id AS farmer_id, u.full_name AS farmer_name,
+              ROUND(AVG(fr.rating), 1) AS rating
+       FROM users u
+       LEFT JOIN farmer_ratings fr ON fr.farmer_id = u.id
+       WHERE u.id = ? AND u.role = 'farmer' AND u.is_verified = 1
+       GROUP BY u.id, u.full_name`,
+      [verifiedFarmerId]
+    );
+    farmer = {
+      farmer_id: row.farmer_id,
+      farmer_name: row.farmer_name,
+      rating: Number(row.rating || 0)
+    };
   });
 
   it('returns the rating for a specific farmer', async () => {

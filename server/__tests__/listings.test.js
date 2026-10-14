@@ -2,9 +2,23 @@ const request = require('supertest');
 const app = require('../index');
 
 const db = require('../db');
+let listingId;
 
 afterAll(async () => {
+  if (listingId) {
+    await db.query('DELETE FROM products WHERE id = ?', [listingId]);
+  }
   await db.end();
+});
+
+beforeAll(async () => {
+  const [[farmer]] = await db.query("SELECT id FROM users WHERE role = 'farmer' ORDER BY id LIMIT 1");
+  const [result] = await db.query(
+    `INSERT INTO products (farmer_id, name, category, price_per_kg, quantity_kg, county, status)
+     VALUES (?, 'API contract test listing', 'Test category', 1, 1, 'Test County', 'active')`,
+    [farmer.id]
+  );
+  listingId = result.insertId;
 });
 
 describe('GET /api/listings', () => {
@@ -44,13 +58,6 @@ describe('GET /api/listings', () => {
 
 
 describe('GET /api/listings/:listing_id', () => {
-  let listingId;
-
-  beforeAll(async () => {
-    const list = await request(app).get('/api/listings');
-    listingId = list.body[0].id;
-  });
-
   it('returns a single listing matching the contract', async () => {
     const res = await request(app).get(`/api/listings/${listingId}`);   
 

@@ -2,7 +2,28 @@ const request = require('supertest');
 const app = require('../app');
 const db = require('../db');
 
-afterAll(async () => { await db.end(); });
+let farmerId;
+let productFixtureId;
+const createdProductIds = [];
+
+beforeAll(async () => {
+  const [[farmer]] = await db.query("SELECT id FROM users WHERE role = 'farmer' ORDER BY id LIMIT 1");
+  farmerId = farmer.id;
+  const [result] = await db.query(
+    `INSERT INTO products (farmer_id, name, price_per_kg, quantity_kg)
+     VALUES (?, 'API contract test product', 1, 1)`,
+    [farmerId]
+  );
+  productFixtureId = result.insertId;
+  createdProductIds.push(productFixtureId);
+});
+
+afterAll(async () => {
+  for (const id of createdProductIds) {
+    await db.query('DELETE FROM products WHERE id = ?', [id]);
+  }
+  await db.end();
+});
 
 describe('GET /api/products', () => {
   it('happy path: returns an array of products with the documented shape', async () => {
@@ -34,11 +55,12 @@ describe('GET /api/products/:id', () => {
   });
 
   it('happy path: returns the full product for a known id', async () => {
-    const res = await request(app).get('/api/products/1');
+    const res = await request(app).get(`/api/products/${productFixtureId}`);
     expect(res.status).toBe(200);
-    expect(res.body).toHaveProperty('id', 1);
+    expect(res.body).toHaveProperty('id', productFixtureId);
     expect(res.body).toHaveProperty('farmer_name');
-    expect(typeof res.body.price_per_kg).not.toBe('undefined');
+    expect(res.body).toHaveProperty('farmer_verified');
+    expect(typeof res.body.price_per_kg).toBe('string');
   });
 });
 
@@ -51,7 +73,7 @@ describe('POST /api/products', () => {
 
   it('happy path: creates a listing and returns its new id', async () => {
     const res = await request(app).post('/api/products').send({
-      farmerId: 1,
+      farmerId,
       name: 'Test Kale Batch',
       category: 'Vegetables',
       pricePerKg: 20,
@@ -61,6 +83,7 @@ describe('POST /api/products', () => {
     expect(res.status).toBe(201);
     expect(res.body).toHaveProperty('id');
     expect(typeof res.body.id).toBe('number');
+    createdProductIds.push(res.body.id);
 
     // Follow up: the created listing is actually retrievable and correct
     const getRes = await request(app).get(`/api/products/${res.body.id}`);
@@ -74,9 +97,10 @@ describe('PUT /api/products/:id', () => {
   let createdId;
   beforeAll(async () => {
     const res = await request(app).post('/api/products').send({
-      farmerId: 1, name: 'Editable Listing', pricePerKg: 10, quantityKg: 50
+      farmerId, name: 'Editable Listing', pricePerKg: 10, quantityKg: 50
     });
     createdId = res.body.id;
+    createdProductIds.push(createdId);
   });
 
   it('happy path: updates only the fields provided', async () => {
@@ -98,11 +122,13 @@ describe('PUT /api/products/:id', () => {
 describe('DELETE /api/products/:id', () => {
   it('happy path: deletes a listing, and it is then really gone', async () => {
     const createRes = await request(app).post('/api/products').send({
-      farmerId: 1, name: 'Disposable Listing', pricePerKg: 5, quantityKg: 10
+      farmerId, name: 'Disposable Listing', pricePerKg: 5, quantityKg: 10
     });
     const id = createRes.body.id;
+    createdProductIds.push(id);
 
     const delRes = await request(app).delete(`/api/products/${id}`);
+    createdProductIds.splice(createdProductIds.indexOf(id), 1);
     expect(delRes.status).toBe(200);
 
     const getRes = await request(app).get(`/api/products/${id}`);

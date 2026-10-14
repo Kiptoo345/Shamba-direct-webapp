@@ -10,11 +10,17 @@ router.get('/', async (req, res) => {
   const { county, category, farmerId, status, minQuantity } = req.query;
   const clauses = [];
   const params = [];
+  const partnerListing = req.baseUrl.endsWith('/listings');
 
   if (county) { clauses.push('p.county = ?'); params.push(county); }
   if (category) { clauses.push('p.category = ?'); params.push(category); }
   if (farmerId) { clauses.push('p.farmer_id = ?'); params.push(farmerId); }
-  if (status) { clauses.push('p.status = ?'); params.push('active'); }
+  if (partnerListing) {
+    clauses.push("p.status = 'active'");
+  } else if (status) {
+    clauses.push('p.status = ?');
+    params.push(status);
+  }
   if (minQuantity) { clauses.push('p.quantity_kg >= ?'); params.push(minQuantity); }
 
   const where = clauses.length ? `WHERE ${clauses.join(' AND ')}` : '';
@@ -28,15 +34,19 @@ router.get('/', async (req, res) => {
        ORDER BY p.created_at DESC`,
       params
     );
-      const shaped = products.map(p => ({
+    if (!partnerListing) {
+      return res.json(products);
+    }
+
+    const shaped = products.map(p => ({
         id: p.id,
         name: p.name,
         price_per_kg: parseFloat(p.price_per_kg),
-        quantity_kg: parseInt(p.quantity_kg,),
+        quantity_kg: parseFloat(p.quantity_kg),
         category: p.category,
         county: p.county
       }));
-      res.json(shaped);
+    res.json(shaped);
   } catch (error) {
     console.error('Error fetching products:', error);
     res.status(500).json({ error: 'Failed to fetch products' });
@@ -51,17 +61,22 @@ router.get('/:id', async (req, res) => {
   if (!Number.isInteger(Number(id))) {
     return res.status(400).json({ error: 'listing_id must be an integer' });
   }
+  const partnerListing = req.baseUrl.endsWith('/listings');
   try {
     const [rows] = await db.query(
       `SELECT p.*, u.full_name AS farmer_name, u.is_verified AS farmer_verified
        FROM products p JOIN users u ON u.id = p.farmer_id
-       WHERE p.id = ? AND p.status = 'active'`,
+       WHERE p.id = ?${partnerListing ? " AND p.status = 'active'" : ''}`,
       [id]
     );
     if (rows.length === 0) return res.status(404).json({ error: 'Listing not found' });
 
-    await db.query('UPDATE products SET views = views + 1 WHERE id = ?', [id]);
     const p = rows[0];
+    await db.query('UPDATE products SET views = views + 1 WHERE id = ?', [id]);
+    if (!partnerListing) {
+      return res.json({ ...p, views: p.views + 1 });
+    }
+
     res.json({
       id: p.id,
       farmer_id: p.farmer_id,
@@ -70,7 +85,7 @@ router.get('/:id', async (req, res) => {
       name: p.name,
       category: p.category,
       price_per_kg: parseFloat(p.price_per_kg),
-      quantity_kg: parseInt(p.quantity_kg),
+      quantity_kg: parseFloat(p.quantity_kg),
       views: p.views + 1,
       county: p.county
     });
@@ -86,11 +101,22 @@ router.get('/:id', async (req, res) => {
 router.post('/', async (req, res) => {
   const { farmerId, name, category, pricePerKg, quantityKg, county, harvestNote, imageEmoji, status } = req.body;
 
-  if (!farmerId || !name || !pricePerKg || !quantityKg) {
+  if (!farmerId || !name || pricePerKg === undefined || quantityKg === undefined) {
     return res.status(400).json({ error: 'farmerId, name, pricePerKg and quantityKg are required' });
+  }
+  if (!Number.isInteger(Number(farmerId)) || Number(farmerId) < 1
+    || !Number.isFinite(Number(pricePerKg)) || Number(pricePerKg) <= 0
+    || !Number.isFinite(Number(quantityKg)) || Number(quantityKg) <= 0) {
+    return res.status(400).json({ error: 'farmerId must be a positive integer and pricePerKg and quantityKg must be greater than 0' });
+  }
+  if (status !== undefined && !['active', 'pending_review', 'sold_out'].includes(status)) {
+    return res.status(400).json({ error: 'status must be active, pending_review or sold_out' });
   }
 
   try {
+    const [[farmer]] = await db.query("SELECT id FROM users WHERE id = ? AND role = 'farmer'", [farmerId]);
+    if (!farmer) return res.status(404).json({ error: 'Farmer not found' });
+
     const [result] = await db.query(
       `INSERT INTO products (farmer_id, name, category, price_per_kg, quantity_kg, county, harvest_note, image_emoji, status)
        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
@@ -109,6 +135,18 @@ router.post('/', async (req, res) => {
 router.put('/:id', async (req, res) => {
   const { id } = req.params;
   const { name, category, pricePerKg, quantityKg, county, harvestNote, status } = req.body;
+  if (!Number.isInteger(Number(id)) || Number(id) < 1) {
+    return res.status(400).json({ error: 'id must be a positive integer' });
+  }
+  if (pricePerKg !== undefined && (!Number.isFinite(Number(pricePerKg)) || Number(pricePerKg) <= 0)) {
+    return res.status(400).json({ error: 'pricePerKg must be greater than 0' });
+  }
+  if (quantityKg !== undefined && (!Number.isFinite(Number(quantityKg)) || Number(quantityKg) <= 0)) {
+    return res.status(400).json({ error: 'quantityKg must be greater than 0' });
+  }
+  if (status !== undefined && !['active', 'pending_review', 'sold_out'].includes(status)) {
+    return res.status(400).json({ error: 'status must be active, pending_review or sold_out' });
+  }
 
   try {
     const [result] = await db.query(
@@ -123,7 +161,10 @@ router.put('/:id', async (req, res) => {
        WHERE id = ?`,
       [name || null, category || null, pricePerKg || null, quantityKg || null, county || null, harvestNote || null, status || null, id]
     );
-    if (result.affectedRows === 0) return res.status(404).json({ error: 'Listing not found' });
+    if (result.affectedRows === 0) {
+      const [[product]] = await db.query('SELECT id FROM products WHERE id = ?', [id]);
+      if (!product) return res.status(404).json({ error: 'Listing not found' });
+    }
     res.json({ message: 'Listing updated successfully' });
   } catch (error) {
     console.error('Error updating product:', error);

@@ -1,27 +1,39 @@
 openapi: 3.0.3
 info:
   title: Shamba Direct API
-  description: "Farmer-to-buyer produce marketplace API for Kenya (Express + MySQL).\nFarmers list produce; buyers (companies)
-    browse, enquire, order and rate.\n\n## Quickstart\n\nStart the API locally (see the README), then:\n\n```\ncurl http://localhost:5000/api/products\n\
-    ```\n\nNo account or token is needed — that call returns the seeded produce listings.\n\n## Authentication\n\n**There
-    is no token authentication yet.** Every endpoint is currently public:\nno `Authorization` header is required or checked.
-    `POST /api/auth/login`\nverifies a phone number + password and returns the user's profile, but it does\n**not** return
-    a token or start a session. Callers identify themselves by\nsending ids in the request body (`farmerId`, `buyerId`). Real
-    authentication\narrives in Week 9; this section will change then.\n\n## Conventions\n\n* Request and response bodies are
-    JSON. Write requests **must** send\n  `Content-Type: application/json`.\n* Field names in **requests** are camelCase (`pricePerKg`);
-    field names in\n  **responses** are snake_case (`price_per_kg`) because they come straight\n  from the database.\n* MySQL
-    `DECIMAL` values (prices, quantities, coordinates) are serialized as\n  **strings**, e.g. `\"45.00\"`.\n* Timestamps are
-    ISO-8601 UTC strings.\n\n## Errors\n\nEvery failed request returns a JSON body with a single `error` string. Success\n\
-    bodies never contain an `error` key — they carry a `message` (and usually an\n`id`). Status codes used: `400` bad/missing
-    input, `401` bad credentials,\n`404` unknown record or route, `409` duplicate account, `500` server/database\nfailure.\n\
-    \n```\n{ \"error\": \"Listing not found\" }\n```\n\nMalformed requests and wrong URLs use the same shape:\n\n| Mistake
-    | Response |\n|---|---|\n| Body is not valid JSON | `400` `{ \"error\": \"Request body is not valid JSON\" }` |\n| Forgot
-    `Content-Type: application/json` (body ignored) | `400` `{ \"error\": \"<field>, <field> are required\" }` |\n| URL does
-    not exist | `404` `{ \"error\": \"Route not found: GET /api/nope\" }` |\n"
+  description: |
+    Shamba Direct is a REST API for a Kenyan farmer-to-buyer marketplace.
+
+    ## Try it out
+    1. Start MySQL and load `server/sql/schema.sql`.
+    2. Copy `server/.env.example` to `server/.env` and configure the database.
+    3. Start the API with `cd server && npm start`.
+    4. Use **Try it out** below. The GET examples use records from the configured
+       development database; IDs can differ if your database has changed.
+
+    ## Data and write operations
+    `/api/listings`, `/api/market-prices`, `/api/farmers/ratings`, and
+    `/api/headquarters` provide the partner-facing read endpoints. Other
+    endpoints support the web app and include operations that create, change,
+    or delete database records. Changes made with **Try it out** are permanent.
+    Use a local or disposable database when testing write operations.
+
+    ## Authentication and privacy
+    The API does not currently require or issue authentication tokens. Login
+    checks credentials but does not create a session. Do not use real passwords
+    or personal information in Swagger UI examples. Do not expose this
+    development API to the public internet.
+
+    ## Conventions
+    Request bodies use JSON. Most write fields use camelCase; `/api/enquiries`
+    currently accepts `product_id` and `buyer_id`. Response fields generally
+    use snake_case. Monetary and quantity values may be JSON numbers or decimal
+    strings depending on the endpoint. Timestamps use ISO 8601.
+
+    Errors are JSON objects such as `{"error":"Listing not found"}`.
   version: "1.0.0"
 servers:
   - url: http://localhost:5000
-
     description: Local development server (npm start in /server)
 components:
   schemas:
@@ -45,28 +57,28 @@ components:
         quantity_kg: {type: string, description: "Decimal, serialized as a string"}
         county: {type: string, nullable: true}
         harvest_note: {type: string, nullable: true}
-        image_emoji: {type: string}
+        image_emoji: {type: string, nullable: true}
         status: {type: string, enum: [pending_review, active, sold_out]}
         views: {type: integer}
         created_at: {type: string, format: date-time}
         updated_at: {type: string, format: date-time}
         farmer_name: {type: string}
-        farmer_verified: {type: integer, description: "0 or 1"}
+        farmer_verified: {type: integer, enum: [0, 1]}
       required: [id, farmer_id, name, price_per_kg, quantity_kg]
       example:
-        id: 1
-        farmer_id: 1
-        name: "Roma Tomatoes"
-        category: "Vegetables"
-        price_per_kg: "45.00"
-        quantity_kg: "800.00"
-        county: "Kirinyaga"
-        harvest_note: "Harvested 2 days ago"
-        image_emoji: "🍅"
+        id: 10
+        farmer_id: 3
+        name: "Grade A Maize"
+        category: "Cereals & Grains"
+        price_per_kg: "32.00"
+        quantity_kg: "3500.00"
+        county: "Uasin Gishu"
+        harvest_note: "Post-harvest dry"
+        image_emoji: "🌽"
         status: "active"
-        views: 48
-        created_at: "2026-10-13T18:34:13.000Z"
-        updated_at: "2026-10-13T18:34:13.000Z"
+        views: 22
+        created_at: "2026-09-09T16:02:57.000Z"
+        updated_at: "2026-09-09T16:02:57.000Z"
         farmer_name: "James Mwangi"
         farmer_verified: 1
 
@@ -81,16 +93,15 @@ components:
         county: {type: string}
         harvestNote: {type: string}
         imageEmoji: {type: string}
-        status: {type: string, enum: [pending_review, active, sold_out], description: Defaults to pending_review. Any 
-            other value returns 500.}
+        status: {type: string, enum: [pending_review, active, sold_out], description: Defaults to pending_review.}
       required: [farmerId, name, pricePerKg, quantityKg]
       example:
-        farmerId: 1
-        name: "Kale"
+        farmerId: 3
+        name: "Kale (Swagger test)"
         category: "Vegetables"
         pricePerKg: 30
         quantityKg: 200
-        county: "Kirinyaga"
+        county: "Uasin Gishu"
         harvestNote: "Picked this morning"
 
     ProductPatchInput:
@@ -124,8 +135,8 @@ components:
         created_at: {type: string, format: date-time}
         product_name: {type: string}
         buyer_name: {type: string}
-        buyer_phone: {type: string}
-        buyer_county: {type: string}
+        buyer_phone: {type: string, description: "Sensitive buyer contact data; example value is redacted."}
+        buyer_county: {type: string, nullable: true, description: "Sensitive buyer data; example value is redacted."}
         farmer_name: {type: string}
         buyer_company_name: {type: "string", nullable: true}
         buyer_delivery_address: {type: "string", nullable: true}
@@ -133,21 +144,21 @@ components:
       required: [id, product_id, buyer_id, farmer_id, status]
       example:
         id: 1
-        product_id: 1
-        buyer_id: 4
+        product_id: 9
+        buyer_id: 8
         farmer_id: 1
-        quantity_kg: "50.00"
-        total_price: "2250.00"
-        status: "pending"
-        created_at: "2026-10-13T18:34:21.000Z"
-        updated_at: "2026-10-13T18:34:21.000Z"
+        quantity_kg: "500.00"
+        total_price: "22500.00"
+        status: "delivered"
+        created_at: "2026-09-09T21:42:16.000Z"
+        updated_at: "2026-09-09T21:55:23.000Z"
         product_name: "Roma Tomatoes"
-        buyer_name: "Test Buyer"
-        buyer_phone: "0700000001"
-        buyer_county: "Nairobi"
-        buyer_company_name: "Test Foods Ltd"
-        buyer_delivery_address:
-        farmer_name: "James Mwangi"
+        buyer_name: "REDACTED"
+        buyer_phone: "REDACTED"
+        buyer_county: "REDACTED"
+        buyer_company_name: "REDACTED"
+        buyer_delivery_address: "REDACTED"
+        farmer_name: "REDACTED"
 
     OrderInput:
       type: object
@@ -156,7 +167,7 @@ components:
         buyerId: {type: integer}
         quantityKg: {type: number, description: "Must be greater than 0", minimum: 0, exclusiveMinimum: true}
       required: [productId, buyerId, quantityKg]
-      example: {productId: 1, buyerId: 4, quantityKg: 50}
+      example: {productId: 9, buyerId: 8, quantityKg: 1}
 
     OrderStatusInput:
       type: object
@@ -175,31 +186,61 @@ components:
         rating: {type: integer, minimum: 1, maximum: 5}
         review_text: {type: string, nullable: true}
         created_at: {type: string, format: date-time}
+        farmer_name: {type: string, description: "Included when filtering ratings by farmerId."}
       required: [id, farmer_id, buyer_id, rating]
       example:
         id: 1
         farmer_id: 1
-        buyer_id: 4
+        buyer_id: 8
         order_id: 1
         rating: 5
-        review_text: "Fresh and on time"
-        created_at: "2026-10-13T18:34:21.000Z"
+        review_text: "excellent "
+        created_at: "2026-09-09T21:55:37.000Z"
 
     RatingInput:
       type: object
       properties:
         farmerId: {type: integer}
         buyerId: {type: integer}
-        orderId: {type: integer}
+        orderId: {type: integer, description: "Optional delivered order belonging to the specified farmer and buyer"}
         rating: {type: integer, minimum: 1, maximum: 5}
-        reviewText: {type: string}
+        reviewText: {type: string, maxLength: 500}
       required: [farmerId, buyerId, rating]
       example:
-        farmerId: 1
-        buyerId: 4
-        orderId: 1
+        farmerId: 3
+        buyerId: 8
         rating: 5
-        reviewText: "Fresh and on time"
+        reviewText: "Fresh produce, thank you."
+
+    ListingSummary:
+      type: object
+      properties:
+        id: {type: integer}
+        name: {type: string}
+        price_per_kg: {type: number}
+        quantity_kg: {type: number}
+        category: {type: string, nullable: true}
+        county: {type: string, nullable: true}
+      required: [id, name, price_per_kg, quantity_kg]
+
+    ListingDetail:
+      allOf:
+        - $ref: '#/components/schemas/ListingSummary'
+        - type: object
+          properties:
+            farmer_id: {type: integer}
+            farmer_name: {type: string}
+            farmer_verified: {type: boolean}
+            views: {type: integer}
+          required: [farmer_id, farmer_name, farmer_verified, views]
+
+    FarmerRating:
+      type: object
+      properties:
+        farmer_id: {type: integer}
+        farmer_name: {type: string}
+        rating: {type: number, minimum: 0, maximum: 5}
+      required: [farmer_id, farmer_name, rating]
 
     Enquiry:
       type: object
@@ -215,22 +256,22 @@ components:
       required: [id, product_id, farmer_id, message]
       example:
         id: 1
-        product_id: 1
-        buyer_id: 4
+        product_id: 9
+        buyer_id: 1
         farmer_id: 1
         message: "Can you deliver to Nairobi?"
-        created_at: "2026-10-13T18:34:21.000Z"
+        created_at: "2026-09-09T16:04:11.000Z"
         product_name: "Roma Tomatoes"
-        buyer_name: "Test Buyer"
+        buyer_name: "Maxwell Kimani"
 
     EnquiryInput:
       type: object
       properties:
-        productId: {type: integer}
-        buyerId: {type: integer}
+        product_id: {type: integer}
+        buyer_id: {type: integer}
         message: {type: string}
-      required: [productId, buyerId, message]
-      example: {productId: 1, buyerId: 4, message: "Can you deliver to Nairobi?"}
+      required: [product_id, buyer_id, message]
+      example: {product_id: 9, buyer_id: 8, message: "Can you deliver to Nairobi?"}
 
     ContactMessage:
       type: object
@@ -271,18 +312,16 @@ components:
         region_name: {type: string}
         county: {type: string}
         address: {type: string, nullable: true}
-        latitude: {type: "string", nullable: true, description: "Decimal serialized as a string, e.g. \"0.282700\""}
-        longitude: {type: "string", nullable: true, description: "Decimal serialized as a string, e.g. \"34.751900\""}
-        created_at: {type: "string", format: "date-time"}
+        latitude: {type: number, nullable: true}
+        longitude: {type: number, nullable: true}
       required: [id, region_name, county]
       example:
         id: 1
         region_name: "Shamba Direct HQ"
         county: "Nairobi"
         address: "2nd Floor, Ngong Road Plaza, Ngong Road, Nairobi"
-        latitude:
-        longitude:
-        created_at: "2026-10-13T18:34:13.000Z"
+        latitude: null
+        longitude: null
 
     HeadquartersInput:
       type: object
@@ -300,30 +339,28 @@ components:
         latitude: 0.2827
         longitude: 34.7519
 
+    HeadquartersPatchInput:
+      type: object
+      properties:
+        regionName: {type: string}
+        county: {type: string}
+        address: {type: string}
+        latitude: {type: number}
+        longitude: {type: number}
+      example:
+        address: "Ngong Road, Nairobi"
+
     MarketPrice:
       type: object
       properties:
-        id: {type: integer}
         crop_name: {type: string}
-        price_per_kg: {type: string}
+        price_per_kg: {type: number}
         county: {type: string, nullable: true}
-        updated_at: {type: "string", format: "date-time"}
-      required: [id, crop_name, price_per_kg]
+      required: [crop_name, price_per_kg]
       example:
-        id: 3
-        crop_name: "Potatoes"
-        price_per_kg: "28.00"
-        county: "Nyandarua"
-        updated_at: "2026-10-13T18:34:13.000Z"
-
-    MarketPriceInput:
-      type: object
-      properties:
-        cropName: {type: string}
-        pricePerKg: {type: number}
-        county: {type: string}
-      required: [cropName, pricePerKg]
-      example: {cropName: "Cabbage", pricePerKg: 22.5, county: "Nakuru"}
+        crop_name: "Maize"
+        price_per_kg: 32
+        county: "Uasin Gishu"
 
     User:
       type: object
@@ -332,7 +369,7 @@ components:
         full_name: {type: string}
         email: {type: string, nullable: true}
         phone_number: {type: string}
-        role: {type: string, enum: [farmer, buyer], description: Registration accepts farmer or buyer.}
+        role: {type: string, enum: [farmer, buyer, admin]}
         county: {type: string, nullable: true}
         is_verified: {type: integer}
         created_at: {type: "string", format: "date-time"}
@@ -344,21 +381,22 @@ components:
           additionalProperties: true
       required: [id, full_name, phone_number, role]
       example:
-        id: 4
-        full_name: "Test Buyer"
+        id: 5
+        full_name: "Nairobi Provisions Ltd"
         email:
-        phone_number: "0700000001"
+        phone_number: "REDACTED"
         role: "buyer"
         county: "Nairobi"
-        is_verified: 0
-        created_at: "2026-10-13T18:34:13.000Z"
-        updated_at: "2026-10-13T18:34:13.000Z"
+        is_verified: 1
+        created_at: "2026-09-09T15:57:44.000Z"
+        updated_at: "2026-09-09T15:57:44.000Z"
         profile:
-          company_name: "Test Foods Ltd"
+          company_name: "Nairobi Provisions Ltd"
           business_type:
-          delivery_address:
+          delivery_address: "REDACTED"
 
     RegisterInput:
+      description: Use a new, unique phone number for each registration test.
       type: object
       properties:
         role: {type: string, enum: [farmer, buyer]}
@@ -379,18 +417,19 @@ components:
       example:
         role: "buyer"
         fullName: "Test Buyer"
-        phoneNumber: "0700000001"
-        password: "secret123"
+        phoneNumber: "0700000000"
+        password: "replace-with-a-new-test-password"
         county: "Nairobi"
         companyName: "Test Foods Ltd"
 
     LoginInput:
+      description: Replace the sample values with credentials for an account you registered.
       type: object
       properties:
         phoneNumber: {type: string}
         password: {type: string}
       required: [phoneNumber, password]
-      example: {phoneNumber: "0700000001", password: "secret123"}
+      example: {phoneNumber: "0700000000", password: "replace-with-account-password"}
     MessageResponse:
       type: "object"
       properties:
@@ -453,12 +492,12 @@ paths:
                   details: {type: "string"}
               example:
                 error: "Database connection failed"
-                details: "Access denied for user 'root'@'localhost'"
+                details: "Check the local database server and configured connection settings."
   /api/products:
     get:
       tags: [Products]
       operationId: listProducts
-      summary: List products (filterable)
+      summary: List all products, including inactive listings
       parameters:
         - in: query
           name: county
@@ -471,7 +510,7 @@ paths:
           schema: {type: integer}
         - in: query
           name: status
-          schema: {type: string}
+          schema: {type: string, enum: [active, pending_review, sold_out]}
         - in: query
           name: minQuantity
           schema: {type: number}
@@ -483,6 +522,40 @@ paths:
               schema:
                 type: array
                 items: {$ref: '#/components/schemas/Product'}
+              examples:
+                databaseProducts:
+                  summary: Current products from the development database
+                  value:
+                    - id: 9
+                      farmer_id: 1
+                      name: "Roma Tomatoes"
+                      category: "Vegetables"
+                      price_per_kg: "45.00"
+                      quantity_kg: "5000.00"
+                      county: "Kirinyaga"
+                      harvest_note: "Harvested 2 days ago"
+                      image_emoji: "🍅"
+                      status: "active"
+                      views: 67
+                      created_at: "2026-09-09T16:02:57.000Z"
+                      updated_at: "2026-10-14T06:30:54.000Z"
+                      farmer_name: "Maxwell Kimani"
+                      farmer_verified: 0
+                    - id: 10
+                      farmer_id: 3
+                      name: "Grade A Maize"
+                      category: "Cereals & Grains"
+                      price_per_kg: "32.00"
+                      quantity_kg: "3500.00"
+                      county: "Uasin Gishu"
+                      harvest_note: "Post-harvest dry"
+                      image_emoji: "🌽"
+                      status: "active"
+                      views: 22
+                      created_at: "2026-09-09T16:02:57.000Z"
+                      updated_at: "2026-09-09T16:02:57.000Z"
+                      farmer_name: "James Mwangi"
+                      farmer_verified: 1
         '500': {$ref: "#/components/responses/ServerError"}
     post:
       tags: [Products]
@@ -493,6 +566,14 @@ paths:
         content:
           application/json:
             schema: {$ref: '#/components/schemas/ProductInput'}
+            example:
+              farmerId: 3
+              name: "Kale (Swagger test)"
+              category: "Vegetables"
+              pricePerKg: 30
+              quantityKg: 200
+              county: "Uasin Gishu"
+              harvestNote: "Picked this morning"
       responses:
         "201":
           description: Created
@@ -503,38 +584,66 @@ paths:
                 properties:
                   message: {type: string}
                   id: {type: integer}
-              example: {message: "Listing created successfully", id: 3}
+              example: {message: "Listing created successfully", id: 11}
         "400":
-          description: Missing required fields
+          description: Missing fields or invalid numeric values / status
           content:
             application/json:
               schema: {$ref: '#/components/schemas/Error'}
               example: {error: "farmerId, name, pricePerKg and quantityKg are required"}
+        "404":
+          description: Farmer does not exist
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Farmer not found"}
         '500': {$ref: "#/components/responses/ServerError"}
   /api/products/{id}:
     get:
       tags: [Products]
       operationId: getProduct
-      summary: Get a single product (increments its view count as a side effect)
+      summary: Get a product in any listing status (increments its view count)
       parameters:
         - in: path
           name: id
           required: true
           schema: {type: integer}
           description: Numeric id of the record (the `id` returned when it was created)
-          example: 1
+          example: 10
       responses:
         "200":
           description: The product
           content:
             application/json:
               schema: {$ref: '#/components/schemas/Product'}
+              example:
+                id: 10
+                farmer_id: 3
+                name: "Grade A Maize"
+                category: "Cereals & Grains"
+                price_per_kg: "32.00"
+                quantity_kg: "3500.00"
+                county: "Uasin Gishu"
+                harvest_note: "Post-harvest dry"
+                image_emoji: "🌽"
+                status: "active"
+                views: 23
+                created_at: "2026-09-09T16:02:57.000Z"
+                updated_at: "2026-09-09T16:02:57.000Z"
+                farmer_name: "James Mwangi"
+                farmer_verified: 1
         "404":
           description: Not found
           content:
             application/json:
               schema: {$ref: '#/components/schemas/Error'}
               example: {error: "Listing not found"}
+        "400":
+          description: Product id is not an integer
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "listing_id must be an integer"}
         '500': {$ref: "#/components/responses/ServerError"}
     put:
       tags: [Products]
@@ -546,7 +655,7 @@ paths:
           required: true
           schema: {type: integer}
           description: Numeric id of the record (the `id` returned when it was created)
-          example: 1
+          example: 10
       requestBody:
         content:
           application/json:
@@ -559,6 +668,11 @@ paths:
             application/json:
               schema: {$ref: "#/components/schemas/MessageResponse"}
               example: {message: "Listing updated successfully"}
+        "400":
+          description: Invalid path id, numeric value or listing status
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
         "404":
           description: Not found
           content:
@@ -576,7 +690,7 @@ paths:
           required: true
           schema: {type: integer}
           description: Numeric id of the record (the `id` returned when it was created)
-          example: 1
+          example: 10
       responses:
         "200":
           description: "Deleted"
@@ -591,11 +705,153 @@ paths:
               schema: {$ref: '#/components/schemas/Error'}
               example: {error: "Listing not found"}
         '500': {$ref: "#/components/responses/ServerError"}
+  /api/listings:
+    get:
+      tags: [Listings]
+      operationId: listActiveListings
+      summary: List active produce listings for the partner API
+      parameters:
+        - in: query
+          name: county
+          schema: {type: string}
+        - in: query
+          name: category
+          schema: {type: string}
+        - in: query
+          name: farmerId
+          schema: {type: integer}
+        - in: query
+          name: minQuantity
+          schema: {type: number}
+      responses:
+        "200":
+          description: Active listings only; an empty array is returned when no records match.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/ListingSummary'}
+              examples:
+                databaseListings:
+                  summary: Active listings from the development database
+                  value:
+                    - id: 9
+                      name: "Roma Tomatoes"
+                      price_per_kg: 45
+                      quantity_kg: 5000
+                      category: "Vegetables"
+                      county: "Kirinyaga"
+                    - id: 10
+                      name: "Grade A Maize"
+                      price_per_kg: 32
+                      quantity_kg: 3500
+                      category: "Cereals & Grains"
+                      county: "Uasin Gishu"
+        '500': {$ref: "#/components/responses/ServerError"}
+  /api/listings/{listing_id}:
+    get:
+      tags: [Listings]
+      operationId: getActiveListing
+      summary: Get one active listing and increment its view count
+      parameters:
+        - in: path
+          name: listing_id
+          required: true
+          schema: {type: integer}
+          example: 10
+      responses:
+        "200":
+          description: Active listing with farmer details
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/ListingDetail'}
+              example:
+                id: 10
+                farmer_id: 3
+                farmer_name: "James Mwangi"
+                farmer_verified: true
+                name: "Grade A Maize"
+                category: "Cereals & Grains"
+                price_per_kg: 32
+                quantity_kg: 3500
+                views: 23
+                county: "Uasin Gishu"
+        "400":
+          description: Listing id is not a positive integer
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "listing_id must be an integer"}
+        "404":
+          description: Listing does not exist or is not active
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Listing not found"}
+        '500': {$ref: "#/components/responses/ServerError"}
+  /api/farmers/ratings:
+    get:
+      tags: [Farmers]
+      operationId: listVerifiedFarmerRatings
+      summary: List ratings for verified farmers, optionally filtered by county
+      parameters:
+        - in: query
+          name: county
+          schema: {type: string}
+      responses:
+        "200":
+          description: Only verified farmers with one or more ratings are returned.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/FarmerRating'}
+              examples:
+                currentDatabase:
+                  summary: No verified farmers currently have ratings
+                  value: []
+        '500': {$ref: "#/components/responses/ServerError"}
+  /api/farmers/{farmer_id}/rating:
+    get:
+      tags: [Farmers]
+      operationId: getVerifiedFarmerRating
+      summary: Get the average rating for one verified farmer
+      parameters:
+        - in: path
+          name: farmer_id
+          required: true
+          schema: {type: integer, minimum: 1}
+          example: 3
+      responses:
+        "200":
+          description: A one-item array; rating is zero if this farmer has not yet received a review.
+          content:
+            application/json:
+              schema:
+                type: array
+                items: {$ref: '#/components/schemas/FarmerRating'}
+              example:
+                - farmer_id: 3
+                  farmer_name: "James Mwangi"
+                  rating: 0
+        "400":
+          description: Farmer id is not an integer
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "farmer_id must be an integer"}
+        "404":
+          description: No verified farmer exists with this id
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Farmer not found"}
+        '500': {$ref: "#/components/responses/ServerError"}
   /api/orders:
     get:
       tags: [Orders]
       operationId: listOrders
-      summary: List orders (filterable by farmerId, buyerId, status)
+      summary: List orders filtered by farmer, buyer, and/or status
       parameters:
         - in: query
           name: farmerId
@@ -614,6 +870,23 @@ paths:
               schema:
                 type: array
                 items: {$ref: '#/components/schemas/Order'}
+              example:
+                - id: 1
+                  product_id: 9
+                  buyer_id: 8
+                  farmer_id: 1
+                  quantity_kg: "500.00"
+                  total_price: "22500.00"
+                  status: "delivered"
+                  created_at: "2026-09-09T21:42:16.000Z"
+                  updated_at: "2026-09-09T21:55:23.000Z"
+                  product_name: "Roma Tomatoes"
+                  buyer_name: "REDACTED"
+                  buyer_phone: "REDACTED"
+                  buyer_county: "REDACTED"
+                  buyer_company_name: "REDACTED"
+                  buyer_delivery_address: "REDACTED"
+                  farmer_name: "REDACTED"
         '500': {$ref: "#/components/responses/ServerError"}
     post:
       tags: [Orders]
@@ -635,7 +908,7 @@ paths:
                   message: {type: string}
                   id: {type: integer}
                   totalPrice: {type: number}
-              example: {message: "Order placed successfully", id: 1, totalPrice: 2250}
+              example: {message: "Order placed successfully", id: 2, totalPrice: 45}
         "400":
           description: Missing fields, or quantity exceeds availability
           content:
@@ -660,7 +933,7 @@ paths:
           required: true
           schema: {type: integer}
           description: Numeric id of the record (the `id` returned when it was created)
-          example: 1
+          example: 2
       requestBody:
         required: true
         content:
@@ -726,8 +999,8 @@ paths:
       responses:
         "200":
           description: >
-            If farmerId is given, an object { ratings: Rating[], averageRating: number, reviewCount: integer }.
-            Otherwise, a plain array of Rating.
+            If farmerId is supplied, returns an object with `ratings`, `averageRating`,
+            and `reviewCount`. If buyerId or neither filter is supplied, returns an array.
           content:
             application/json:
               schema:
@@ -739,13 +1012,37 @@ paths:
                         items: {$ref: "#/components/schemas/Rating"}
                       averageRating:
                         oneOf:
-                          - {type: "string", example: "4.5"}
-                          - {type: "integer", enum: [0]}
-                        description: "One-decimal average serialized as a string (e.g. \"4.5\"). When the farmer has no ratings
-                          yet it is the number 0."
+                          - {type: string, example: "5.0"}
+                          - {type: number, example: 0}
+                        description: Rounded average as a decimal string, or numeric 0 when there are no ratings.
                       reviewCount: {type: integer}
                   - type: array
                     items: {$ref: '#/components/schemas/Rating'}
+              examples:
+                allRatings:
+                  summary: All ratings currently in the development database
+                  value:
+                    - id: 1
+                      farmer_id: 1
+                      buyer_id: 8
+                      order_id: 1
+                      rating: 5
+                      review_text: "excellent "
+                      created_at: "2026-09-09T21:55:37.000Z"
+                ratingsByFarmer:
+                  summary: Filtered ratings response for farmer 1
+                  value:
+                    ratings:
+                      - id: 1
+                        farmer_id: 1
+                        buyer_id: 8
+                        order_id: 1
+                        rating: 5
+                        review_text: "excellent "
+                        created_at: "2026-09-09T21:55:37.000Z"
+                        farmer_name: "Maxwell Kimani"
+                    averageRating: "5.0"
+                    reviewCount: 1
         '500': {$ref: "#/components/responses/ServerError"}
     post:
       tags: [Ratings]
@@ -766,13 +1063,19 @@ paths:
                 properties:
                   message: {type: string}
                   id: {type: integer}
-              example: {message: "Rating submitted successfully", id: 1}
+              example: {message: "Rating submitted successfully", id: 2}
         "400":
           description: Missing fields, or rating outside 1-5
           content:
             application/json:
               schema: {$ref: '#/components/schemas/Error'}
               example: {error: "rating must be between 1 and 5"}
+        "404":
+          description: Farmer or buyer does not exist with the required role
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "Farmer not found"}
         '500': {$ref: "#/components/responses/ServerError"}
   /api/ratings/{id}:
     delete:
@@ -793,6 +1096,11 @@ paths:
             application/json:
               schema: {$ref: "#/components/schemas/MessageResponse"}
               example: {message: "Rating deleted successfully"}
+        "400":
+          description: Rating id is not a positive integer
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
         "404":
           description: Not found
           content:
@@ -804,7 +1112,7 @@ paths:
     get:
       tags: [Enquiries]
       operationId: listEnquiries
-      summary: List enquiries (filterable by farmerId, productId)
+      summary: List enquiries filtered by farmer and/or product
       parameters:
         - in: query
           name: farmerId
@@ -820,6 +1128,31 @@ paths:
               schema:
                 type: array
                 items: {$ref: '#/components/schemas/Enquiry'}
+              example:
+                - id: 1
+                  product_id: 9
+                  buyer_id: 1
+                  farmer_id: 1
+                  message: "Hi Maxwell Kimani, I'm interested in your Roma Tomatoes listing."
+                  created_at: "2026-09-09T16:04:11.000Z"
+                  product_name: "Roma Tomatoes"
+                  buyer_name: "Maxwell Kimani"
+                - id: 2
+                  product_id: 9
+                  buyer_id: null
+                  farmer_id: 1
+                  message: "Hi Maxwell Kimani, I'm interested in your Roma Tomatoes listing."
+                  created_at: "2026-09-09T21:29:43.000Z"
+                  product_name: "Roma Tomatoes"
+                  buyer_name: null
+                - id: 3
+                  product_id: 9
+                  buyer_id: 8
+                  farmer_id: 1
+                  message: "Hi Maxwell Kimani, I'm interested in your Roma Tomatoes listing."
+                  created_at: "2026-09-09T21:42:49.000Z"
+                  product_name: "Roma Tomatoes"
+                  buyer_name: "REDACTED"
         '500': {$ref: "#/components/responses/ServerError"}
     post:
       tags: [Enquiries]
@@ -830,6 +1163,10 @@ paths:
         content:
           application/json:
             schema: {$ref: '#/components/schemas/EnquiryInput'}
+            example:
+              product_id: 9
+              buyer_id: 8
+              message: "Can you deliver to Nairobi?"
       responses:
         "201":
           description: Created
@@ -840,15 +1177,15 @@ paths:
                 properties:
                   message: {type: string}
                   id: {type: integer}
-              example: {message: "Enquiry sent to farmer", id: 1}
+              example: {message: "Enquiry submitted successfully", id: 4}
         "400":
-          description: Missing fields
+          description: Missing or invalid product_id, buyer_id, or message
           content:
             application/json:
               schema: {$ref: '#/components/schemas/Error'}
-              example: {error: "You must be logged in to contact a farmer. productId, buyerId and message are required"}
+              example: {error: "product_id, buyer_id and message are required"}
         "404":
-          description: Listing not found
+          description: Listing or buyer not found
           content:
             application/json:
               schema: {$ref: '#/components/schemas/Error'}
@@ -884,15 +1221,22 @@ paths:
     get:
       tags: [Contact]
       operationId: listContactMessages
-      summary: List contact messages (admin inbox)
+      summary: List submitted contact messages (currently no authentication)
       responses:
         "200":
-          description: Array of contact messages
+          description: Contact details are redacted in the example.
           content:
             application/json:
               schema:
                 type: array
                 items: {$ref: '#/components/schemas/ContactMessage'}
+              example:
+                - id: 1
+                  name: "REDACTED"
+                  contact_info: "REDACTED"
+                  subject: "REDACTED"
+                  message: "REDACTED"
+                  created_at: "2026-10-13T19:37:22.000Z"
         '500': {$ref: "#/components/responses/ServerError"}
     post:
       tags: [Contact]
@@ -913,7 +1257,7 @@ paths:
                 properties:
                   message: {type: string}
                   messageId: {type: integer}
-              example: {message: "Inquiry submitted successfully", messageId: 1}
+              example: {message: "Inquiry submitted successfully", messageId: 2}
         "400":
           description: Missing fields
           content:
@@ -952,6 +1296,10 @@ paths:
       tags: [Headquarters]
       operationId: listHeadquarters
       summary: List regional headquarters
+      parameters:
+        - in: query
+          name: county
+          schema: {type: string}
       responses:
         "200":
           description: Array of headquarters
@@ -960,6 +1308,13 @@ paths:
               schema:
                 type: array
                 items: {$ref: '#/components/schemas/Headquarters'}
+              example:
+                - id: 1
+                  region_name: "Shamba Direct HQ"
+                  county: "Nairobi"
+                  address: "2nd Floor, Ngong Road Plaza, Ngong Road, Nairobi"
+                  latitude: null
+                  longitude: null
         '500': {$ref: "#/components/responses/ServerError"}
     post:
       tags: [Headquarters]
@@ -970,6 +1325,12 @@ paths:
         content:
           application/json:
             schema: {$ref: '#/components/schemas/HeadquartersInput'}
+            example:
+              regionName: "Western Hub (Swagger test)"
+              county: "Kakamega"
+              address: "Mumias Road"
+              latitude: 0.2827
+              longitude: 34.7519
       responses:
         "201":
           description: Created
@@ -1006,12 +1367,25 @@ paths:
           content:
             application/json:
               schema: {$ref: '#/components/schemas/Headquarters'}
+              example:
+                id: 1
+                region_name: "Shamba Direct HQ"
+                county: "Nairobi"
+                address: "2nd Floor, Ngong Road Plaza, Ngong Road, Nairobi"
+                latitude: null
+                longitude: null
         "404":
           description: Not found
           content:
             application/json:
               schema: {$ref: '#/components/schemas/Error'}
               example: {error: "Headquarters not found"}
+        "400":
+          description: Headquarters id is not an integer
+          content:
+            application/json:
+              schema: {$ref: '#/components/schemas/Error'}
+              example: {error: "id must be an integer"}
         '500': {$ref: "#/components/responses/ServerError"}
     put:
       tags: [Headquarters]
@@ -1027,7 +1401,7 @@ paths:
       requestBody:
         content:
           application/json:
-            schema: {$ref: '#/components/schemas/HeadquartersInput'}
+            schema: {$ref: '#/components/schemas/HeadquartersPatchInput'}
         required: false
       responses:
         "200":
@@ -1085,99 +1459,19 @@ paths:
               schema:
                 type: array
                 items: {$ref: '#/components/schemas/MarketPrice'}
-        '500': {$ref: "#/components/responses/ServerError"}
-    post:
-      tags: [Market Prices]
-      operationId: createMarketPrice
-      summary: Add a market price point
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema: {$ref: '#/components/schemas/MarketPriceInput'}
-      responses:
-        "201":
-          description: Created
-          content:
-            application/json:
-              schema:
-                type: object
-                properties:
-                  message: {type: string}
-                  id: {type: integer}
-              example: {message: "Market price added successfully", id: 4}
-        "400":
-          description: Missing fields
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/Error'}
-              example: {error: "cropName and pricePerKg are required"}
-        '500': {$ref: "#/components/responses/ServerError"}
-  /api/market-prices/{id}:
-    put:
-      tags: [Market Prices]
-      operationId: updateMarketPrice
-      summary: Update a market price's value
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: {type: integer}
-          description: Numeric id of the record (the `id` returned when it was created)
-          example: 1
-      requestBody:
-        required: true
-        content:
-          application/json:
-            schema:
-              type: object
-              properties:
-                pricePerKg: {type: number}
-              required: [pricePerKg]
-      responses:
-        "200":
-          description: "Updated"
-          content:
-            application/json:
-              schema: {$ref: "#/components/schemas/MessageResponse"}
-              example: {message: "Market price updated successfully"}
-        "400":
-          description: pricePerKg is required
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/Error'}
-              example: {error: "pricePerKg is required"}
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/Error'}
-              example: {error: "Price entry not found"}
-        '500': {$ref: "#/components/responses/ServerError"}
-    delete:
-      tags: [Market Prices]
-      operationId: deleteMarketPrice
-      summary: Delete a market price entry
-      parameters:
-        - in: path
-          name: id
-          required: true
-          schema: {type: integer}
-          description: Numeric id of the record (the `id` returned when it was created)
-          example: 1
-      responses:
-        "200":
-          description: "Deleted"
-          content:
-            application/json:
-              schema: {$ref: "#/components/schemas/MessageResponse"}
-              example: {message: "Market price deleted successfully"}
-        "404":
-          description: Not found
-          content:
-            application/json:
-              schema: {$ref: '#/components/schemas/Error'}
-              example: {error: "Price entry not found"}
+              examples:
+                currentDatabase:
+                  summary: Current prices in the development database
+                  value:
+                    - crop_name: "Maize"
+                      price_per_kg: 32
+                      county: "Uasin Gishu"
+                    - crop_name: "Potatoes"
+                      price_per_kg: 28
+                      county: "Nyandarua"
+                    - crop_name: "Tomatoes"
+                      price_per_kg: 45
+                      county: "Kirinyaga"
         '500': {$ref: "#/components/responses/ServerError"}
   /api/auth/register:
     post:
@@ -1199,7 +1493,7 @@ paths:
                 properties:
                   message: {type: string}
                   userId: {type: integer}
-              example: {message: "User registered successfully", userId: 4}
+              example: {message: "User registered successfully", userId: 9}
         "400":
           description: Missing required fields
           content:
@@ -1239,7 +1533,7 @@ paths:
                   id: 4
                   full_name: "Test Buyer"
                   email:
-                  phone_number: "0700000001"
+                  phone_number: "REDACTED"
                   role: "buyer"
                   county: "Nairobi"
                   is_verified: 0
@@ -1343,7 +1637,7 @@ tags:
   - name: "Enquiries"
     description: "'Contact Farmer' messages about a listing."
   - name: "Contact"
-    description: "The public About & Contact form (admin inbox)."
+    description: "The public About & Contact form and its message records."
   - name: "Headquarters"
     description: "Regional hubs (used by the SettleIn integration)."
   - name: "Market Prices"
