@@ -1,0 +1,866 @@
+openapi: 3.0.3
+
+info:
+  title: Salama API
+  description: |
+    REST API for the Salama GBV (Gender-Based Violence) Awareness,
+    Reporting, and Resource Platform serving Kenya.
+    All sensitive data is handled with strict confidentiality.
+  version: 1.0.0
+  contact:
+    name: Salama Team
+    email: support@salama.ke
+  license:
+    name: MIT
+
+servers:
+  # Added by API Auto Mocking Plugin
+  - description: SwaggerHub API Auto Mocking
+    url: https://virtserver.swaggerhub.com/strathmore-212/openapi.yaml/1.0.0
+  - url: http://localhost:5000/api
+    description: Development server
+
+tags:
+  - name: Users
+    description: User account management
+  - name: Incidents
+    description: GBV incident reports
+  - name: Resources
+    description: Support services directory
+  - name: Donations
+    description: Donation and contribution records
+  - name: Volunteers
+    description: Volunteer applications
+
+paths:
+
+  # ─── USERS ───────────────────────────────────────────
+  /users:
+    get:
+      tags: [Users]
+      summary: Get all users
+      operationId: getUsers
+      responses:
+        '200':
+          description: List of users returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/User'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /users/{id}:
+    get:
+      tags: [Users]
+      summary: Get a single user by ID
+      operationId: getUserById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The user ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: User found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/User'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ─── INCIDENTS ────────────────────────────────────────
+  /incidents:
+    get:
+      tags: [Incidents]
+      summary: Get all incident reports
+      operationId: getIncidents
+      responses:
+        '200':
+          description: List of incidents returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Incident'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      tags: [Incidents]
+      summary: Submit a new incident report
+      operationId: createIncident
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/IncidentInput'
+            example:
+              case_ref: SAL-12345
+              incident_type: physical
+              incident_date: '2024-03-01'
+              county: nairobi
+              location: Westlands
+              description: Detailed description of the incident
+              is_anonymous: true
+      responses:
+        '201':
+          description: Incident created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Incident created
+                  id:
+                    type: integer
+                    example: 3
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /incidents/{id}:
+    get:
+      tags: [Incidents]
+      summary: Get a single incident by ID
+      operationId: getIncidentById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The incident ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Incident found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Incident'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /incidents/{id}/status:
+    patch:
+      tags: [Incidents]
+      summary: Update the status of an incident
+      operationId: updateIncidentStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The incident ID
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [open, in_review, closed]
+            example:
+              status: in_review
+      responses:
+        '200':
+          description: Status updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Incident status updated
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ─── RESOURCES ────────────────────────────────────────
+  /resources:
+    get:
+      tags: [Resources]
+      summary: Get all support resources
+      operationId: getResources
+      parameters:
+        - name: county
+          in: query
+          required: false
+          description: Filter by county name
+          schema:
+            type: string
+            example: nairobi
+        - name: type
+          in: query
+          required: false
+          description: Filter by resource type
+          schema:
+            type: string
+            enum: [hotline, shelter, legal, medical, mental-health]
+      responses:
+        '200':
+          description: List of resources returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Resource'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      tags: [Resources]
+      summary: Add a new support resource
+      operationId: createResource
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/ResourceInput'
+            example:
+              name: FIDA Kenya
+              type: legal
+              county: nairobi
+              description: Free legal aid for GBV survivors
+              contact: '0722509760'
+              available: Mon-Fri 8am-5pm
+      responses:
+        '201':
+          description: Resource created successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Resource created
+                  id:
+                    type: integer
+                    example: 6
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /resources/{id}:
+    get:
+      tags: [Resources]
+      summary: Get a single resource by ID
+      operationId: getResourceById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The resource ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Resource found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Resource'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ─── DONATIONS ────────────────────────────────────────
+  /donations:
+    get:
+      tags: [Donations]
+      summary: Get all donations
+      operationId: getDonations
+      responses:
+        '200':
+          description: List of donations returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Donation'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      tags: [Donations]
+      summary: Record a new donation
+      operationId: createDonation
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/DonationInput'
+            example:
+              donor_name: John Kamau
+              amount: 2500.00
+              payment_method: mpesa
+              transaction_ref: MPE123456
+              message: Keep up the good work
+              is_anonymous: false
+      responses:
+        '201':
+          description: Donation recorded successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Donation recorded
+                  id:
+                    type: integer
+                    example: 4
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /donations/summary:
+    get:
+      tags: [Donations]
+      summary: Get donation summary grouped by payment method
+      operationId: getDonationSummary
+      responses:
+        '200':
+          description: Donation summary returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    payment_method:
+                      type: string
+                      example: mpesa
+                    total_donations:
+                      type: integer
+                      example: 10
+                    total_amount:
+                      type: number
+                      example: 25000.00
+                    average_amount:
+                      type: number
+                      example: 2500.00
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /donations/{id}:
+    get:
+      tags: [Donations]
+      summary: Get a single donation by ID
+      operationId: getDonationById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The donation ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Donation found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Donation'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  # ─── VOLUNTEERS ───────────────────────────────────────
+  /volunteers:
+    get:
+      tags: [Volunteers]
+      summary: Get all volunteer applications
+      operationId: getVolunteers
+      responses:
+        '200':
+          description: List of volunteers returned successfully
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Volunteer'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+    post:
+      tags: [Volunteers]
+      summary: Submit a volunteer application
+      operationId: createVolunteer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VolunteerInput'
+            example:
+              name: Alice Wambui
+              email: alice@example.com
+              phone: '0733333333'
+              county: nairobi
+              role: counsellor
+              availability: weekends
+              experience: 2 years in community health
+              motivation: I want to support GBV survivors in my community
+      responses:
+        '201':
+          description: Volunteer application submitted successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Volunteer application submitted
+                  id:
+                    type: integer
+                    example: 4
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /volunteers/{id}:
+    get:
+      tags: [Volunteers]
+      summary: Get a single volunteer by ID
+      operationId: getVolunteerById
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The volunteer ID
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Volunteer found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Volunteer'
+        '404':
+          $ref: '#/components/responses/NotFound'
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+  /volunteers/{id}/status:
+    patch:
+      tags: [Volunteers]
+      summary: Update volunteer application status
+      operationId: updateVolunteerStatus
+      parameters:
+        - name: id
+          in: path
+          required: true
+          description: The volunteer ID
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [status]
+              properties:
+                status:
+                  type: string
+                  enum: [pending, approved, rejected]
+            example:
+              status: approved
+      responses:
+        '200':
+          description: Volunteer status updated successfully
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+                    example: Volunteer status updated
+        '500':
+          $ref: '#/components/responses/ServerError'
+
+# ─── COMPONENTS ─────────────────────────────────────────
+components:
+
+  schemas:
+
+    User:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: Jane Doe
+        email:
+          type: string
+          format: email
+          example: jane@example.com
+        phone:
+          type: string
+          example: '0711111111'
+        role:
+          type: string
+          enum: [survivor, ngo_staff, admin, volunteer]
+          example: survivor
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-01-15T10:00:00.000Z'
+
+    Incident:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        case_ref:
+          type: string
+          example: SAL-10001
+        incident_type:
+          type: string
+          enum: [physical, sexual, emotional, economic, other]
+          example: physical
+        incident_date:
+          type: string
+          format: date
+          example: '2024-01-15'
+        county:
+          type: string
+          example: nairobi
+        location:
+          type: string
+          example: Westlands
+          nullable: true
+        description:
+          type: string
+          example: Detailed description of the incident
+        status:
+          type: string
+          enum: [open, in_review, closed]
+          example: open
+        is_anonymous:
+          type: boolean
+          example: true
+        user_id:
+          type: integer
+          nullable: true
+          example: null
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-01-15T10:00:00.000Z'
+
+    IncidentInput:
+      type: object
+      required:
+        - case_ref
+        - incident_type
+        - incident_date
+        - county
+        - description
+      properties:
+        case_ref:
+          type: string
+          example: SAL-12345
+        incident_type:
+          type: string
+          enum: [physical, sexual, emotional, economic, other]
+          example: physical
+        incident_date:
+          type: string
+          format: date
+          example: '2024-03-01'
+        county:
+          type: string
+          example: nairobi
+        location:
+          type: string
+          example: Westlands
+        description:
+          type: string
+          example: Detailed description of the incident
+        is_anonymous:
+          type: boolean
+          default: true
+          example: true
+        user_id:
+          type: integer
+          nullable: true
+          example: null
+
+    Resource:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: GBV National Hotline
+        type:
+          type: string
+          enum: [hotline, shelter, legal, medical, mental-health]
+          example: hotline
+        county:
+          type: string
+          example: all
+        description:
+          type: string
+          example: Free 24/7 national hotline for GBV survivors
+        contact:
+          type: string
+          example: '1195'
+        available:
+          type: string
+          example: 24/7
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-01-15T10:00:00.000Z'
+
+    ResourceInput:
+      type: object
+      required:
+        - name
+        - type
+        - county
+        - description
+        - contact
+        - available
+      properties:
+        name:
+          type: string
+          example: FIDA Kenya
+        type:
+          type: string
+          enum: [hotline, shelter, legal, medical, mental-health]
+          example: legal
+        county:
+          type: string
+          example: nairobi
+        description:
+          type: string
+          example: Free legal aid for GBV survivors
+        contact:
+          type: string
+          example: '0722509760'
+        available:
+          type: string
+          example: Mon-Fri 8am-5pm
+
+    Donation:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        donor_name:
+          type: string
+          example: John Kamau
+          nullable: true
+        amount:
+          type: number
+          format: double
+          example: 2500.00
+        payment_method:
+          type: string
+          enum: [mpesa, card, bank]
+          example: mpesa
+        transaction_ref:
+          type: string
+          example: MPE123456
+        message:
+          type: string
+          nullable: true
+          example: Keep up the good work
+        is_anonymous:
+          type: boolean
+          example: false
+        user_id:
+          type: integer
+          nullable: true
+          example: null
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-01-15T10:00:00.000Z'
+
+    DonationInput:
+      type: object
+      required:
+        - amount
+        - payment_method
+        - transaction_ref
+      properties:
+        donor_name:
+          type: string
+          example: John Kamau
+        amount:
+          type: number
+          format: double
+          example: 2500.00
+        payment_method:
+          type: string
+          enum: [mpesa, card, bank]
+          example: mpesa
+        transaction_ref:
+          type: string
+          example: MPE123456
+        message:
+          type: string
+          example: Keep up the good work
+        is_anonymous:
+          type: boolean
+          default: false
+          example: false
+        user_id:
+          type: integer
+          nullable: true
+          example: null
+
+    Volunteer:
+      type: object
+      properties:
+        id:
+          type: integer
+          format: int64
+          example: 1
+        name:
+          type: string
+          example: Alice Wambui
+        email:
+          type: string
+          format: email
+          example: alice@example.com
+        phone:
+          type: string
+          example: '0733333333'
+        county:
+          type: string
+          example: nairobi
+        role:
+          type: string
+          example: counsellor
+        availability:
+          type: string
+          example: weekends
+        experience:
+          type: string
+          nullable: true
+          example: 2 years in community health
+        motivation:
+          type: string
+          example: I want to support GBV survivors in my community
+        status:
+          type: string
+          enum: [pending, approved, rejected]
+          example: pending
+        created_at:
+          type: string
+          format: date-time
+          example: '2024-01-15T10:00:00.000Z'
+
+    VolunteerInput:
+      type: object
+      required:
+        - name
+        - email
+        - phone
+        - county
+        - role
+        - availability
+        - motivation
+      properties:
+        name:
+          type: string
+          example: Alice Wambui
+        email:
+          type: string
+          format: email
+          example: alice@example.com
+        phone:
+          type: string
+          example: '0733333333'
+        county:
+          type: string
+          example: nairobi
+        role:
+          type: string
+          enum: [counsellor, legal, awareness, shelter, digital, transport]
+          example: counsellor
+        availability:
+          type: string
+          enum: [weekdays, weekends, both, flexible]
+          example: weekends
+        experience:
+          type: string
+          example: 2 years in community health
+        motivation:
+          type: string
+          example: I want to support GBV survivors in my community
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: Resource not found
+
+  responses:
+    NotFound:
+      description: The requested resource was not found
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: Resource not found
+
+    ServerError:
+      description: Internal server error
+      content:
+        application/json:
+          schema:
+            $ref: '#/components/schemas/Error'
+          example:
+            error: Failed to fetch data
