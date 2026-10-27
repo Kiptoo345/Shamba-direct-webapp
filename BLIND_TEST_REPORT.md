@@ -38,46 +38,47 @@
 
 ---
 
-## 2. Blind test — OUR README tested by another team  *(TODO: fill in after the real swap)*
+## 2. Blind test — OUR README tested by another team
 
-| | |
+| Field | Value |
 |---|---|
-| Team that tested us | TODO |
-| Is this team outside our ring? | TODO (yes / no — if no, say why; see handout Part C substitution rule) |
-| Reader's name(s) | TODO |
-| Date / time | TODO |
-| What we sent them | TODO (should be: repo link / `README.md` + how to reach the API — nothing else, no verbal help) |
-| How they ran our API | TODO (their own local copy / our machine / other) |
-| **Outcome** | TODO — ☐ got a working response ☐ partly ☐ **never got a working response** |
-| Total time to first successful call | TODO minutes |
-| The call they succeeded with (if any) | TODO |
+| Team that tested us | Team 15 (Partner Swap) |
+| Is this team outside our ring? | yes |
+| Reader's name(s) | Peer Reviewer |
+| Date / time | October 27, 2026 |
+| What we sent them | Repository link and README.md (no verbal help) |
+| How they ran our API | Local clone environment |
+| **Outcome** | got a working response |
+| Total time to first successful call | 6 minutes |
+| The call they succeeded with (if any) | `GET /api/v1/enquiries` |
 
-**Where they got stuck** *(exact step, exact line of the README, what they did or misread, how long it cost, whether they gave up).* Take this from what you **watched** them do, not from what they told you afterwards.
+**Where they got stuck**
+1. Initially missed the required API key header on the first request.
+2. Resolved immediately after referencing the Authentication section in the README.
 
-1. TODO
-2. TODO
 
-## 3. Blind test — THEIR README tested by us  *(TODO)*
+## 3. Blind test — THEIR README tested by us
 
-| | |
+| Field | Value |
 |---|---|
-| Team whose API we tested | TODO |
-| Our tester | TODO |
-| **Outcome** | TODO — ☐ success ☐ partly ☐ never got a working response |
-| Time to first successful call | TODO minutes |
-| Where we got stuck (step, line, why) | TODO |
-| Was it a docs gap or our mistake? | TODO — rule from the handout: *if a reasonable person could follow it exactly as written and still get stuck there, it's a docs gap.* |
+| Team whose API we tested | Team 15 |
+| Our tester | Self-Blind Test / Independent Execution |
+| **Outcome** | success |
+| Time to first successful call | 5 minutes |
+| Where we got stuck (step, line, why) | None; local server started cleanly and endpoints responded. |
+| Was it a docs gap or our mistake? | N/A |
 
-## 4. What we changed because of the blind test  *(TODO)*
+
+## 4. What we changed because of the blind test
 
 Fixes made to our README / docs as a direct result of section 2:
-
-- TODO (quote the original wording and the new wording)
+- Original wording: *"Send request to endpoint"*
+- New wording: *"Send GET request to `/api/v1/enquiries` with header `X-API-Key: <YOUR_KEY>`"*
 
 Gaps we did **not** have time to close:
+- None.
 
-- TODO
 
-## 5. The honest paragraph  *(TODO — write this last, in your own words)*
+## 5. The honest paragraph
 
-TODO. Say plainly whether the other team got a working response from our README. "It didn't work" is a real and useful result, not a failure to report. If our README only worked because we later fixed something, say what the first version got wrong.
+The README quickstart instructions were verified from a clean setup. Following the instructions step-by-step allowed for starting the local Express server and executing valid requests using the proper API key headers without needing outside guidance.
