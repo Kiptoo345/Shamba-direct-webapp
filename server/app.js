@@ -1,21 +1,71 @@
 const express = require('express');
 const cors = require('cors');
+const { timingSafeEqual } = require('node:crypto');
 require('dotenv').config();
 
 const db = require('./db');
 
 const app = express();
+const rateLimitBuckets = new Map();
+const RATE_LIMIT_WINDOW_MS = 60 * 1000;
 
 // Middleware
 app.use(cors()); // Allows the React frontend to communicate with this backend
-app.use(express.json()); // Parses incoming JSON payloads
+app.use(express.json());
 
-// If a caller sends no body, or forgets `Content-Type: application/json`,
-// Express 5 leaves req.body undefined and the route handlers would crash on
-// destructuring (-> HTML 500). Default it to {} so the handlers' own
-// "<field> is required" validation answers with a JSON 400 instead.
+// Keep body validation errors JSON shaped for requests without a JSON body.
 app.use((req, res, next) => {
   if (req.body === undefined) req.body = {};
+  next();
+});
+
+app.use('/api', (req, res, next) => {
+  const apiKeys = Object.entries(process.env)
+    .filter(([name, value]) => /^API_KEY_[A-Z0-9_]+$/.test(name) && value)
+    .map(([name, value]) => ({ consumer: name.slice('API_KEY_'.length), value }));
+  const providedKey = Buffer.from(req.get('X-API-Key') || '');
+  const matchedKey = apiKeys.find(({ value }) => {
+    const expectedKey = Buffer.from(value);
+    return providedKey.length === expectedKey.length
+      && timingSafeEqual(providedKey, expectedKey);
+  });
+
+  if (!matchedKey) {
+    return res.status(401).json({ error: 'A valid X-API-Key header is required' });
+  }
+
+  const partnerReadOnlyRoutes = [
+    /^\/listings(?:\/\d+)?$/,
+    /^\/market-prices$/,
+    /^\/farmers\/ratings$/,
+    /^\/farmers\/\d+\/rating$/,
+    /^\/headquarters(?:\/\d+)?$/
+  ];
+  if (matchedKey.consumer === 'RING_PARTNER'
+    && (req.method !== 'GET' || !partnerReadOnlyRoutes.some((route) => route.test(req.path)))) {
+    return res.status(403).json({ error: 'This API key is read-only and limited to partner data' });
+  }
+
+  const limit = Number(process.env.API_RATE_LIMIT_MAX || 100);
+  if (!Number.isInteger(limit) || limit < 1) {
+    console.error('API_RATE_LIMIT_MAX must be a positive integer');
+    return res.status(500).json({ error: 'API rate limit configuration is invalid' });
+  }
+
+  const now = Date.now();
+  const existingBucket = rateLimitBuckets.get(matchedKey.consumer);
+  const bucket = !existingBucket || existingBucket.resetAt <= now
+    ? { count: 0, resetAt: now + RATE_LIMIT_WINDOW_MS }
+    : existingBucket;
+
+  if (bucket.count >= limit) {
+    const retryAfter = Math.max(1, Math.ceil((bucket.resetAt - now) / 1000));
+    res.set('Retry-After', String(retryAfter));
+    return res.status(429).json({ error: 'Rate limit exceeded', retryAfter });
+  }
+
+  bucket.count += 1;
+  rateLimitBuckets.set(matchedKey.consumer, bucket);
   next();
 });
 
@@ -53,23 +103,15 @@ app.get('/api/test-db', async (req, res) => {
     res.json({ message: 'Database connected successfully!', data: rows });
   } catch (error) {
     console.error('Database connection error:', error.message);
-    res.status(500).json({ error: 'Database connection failed', details: error.message });
+    res.status(500).json({ error: 'Database connection failed' });
   }
 });
 
-// -----------------------------------------------------------------------
-// Error handling — every failure is JSON shaped { "error": "<message>" }
-// (documented in README.md "Error format" and the Error schema in
-// openapi.yaml). Without these two handlers Express answers unknown routes
-// and malformed JSON with an HTML page that includes a stack trace.
-// -----------------------------------------------------------------------
-
 // Unknown route
 app.use((req, res) => {
-  res.status(404).json({ error: `Route not found: ${req.method} ${req.originalUrl}` });
+  res.status(404).json({ error: 'Route not found' });
 });
 
-// Anything thrown/passed to next(err) — e.g. body-parser rejecting bad JSON
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
   if (err.type === 'entity.parse.failed') {

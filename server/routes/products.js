@@ -27,7 +27,10 @@ router.get('/', async (req, res) => {
 
   try {
     const [products] = await db.query(
-      `SELECT p.*, u.full_name AS farmer_name, u.is_verified AS farmer_verified
+      `SELECT p.id, p.farmer_id, p.name, p.category, p.price_per_kg, p.quantity_kg,
+              p.county, p.harvest_note, p.image_emoji, p.status, p.views,
+              p.created_at, p.updated_at, u.full_name AS farmer_name,
+              u.is_verified AS farmer_verified
        FROM products p
        JOIN users u ON u.id = p.farmer_id
        ${where}
@@ -64,7 +67,10 @@ router.get('/:id', async (req, res) => {
   const partnerListing = req.baseUrl.endsWith('/listings');
   try {
     const [rows] = await db.query(
-      `SELECT p.*, u.full_name AS farmer_name, u.is_verified AS farmer_verified
+      `SELECT p.id, p.farmer_id, p.name, p.category, p.price_per_kg, p.quantity_kg,
+              p.county, p.harvest_note, p.image_emoji, p.status, p.views,
+              p.created_at, p.updated_at, u.full_name AS farmer_name,
+              u.is_verified AS farmer_verified
        FROM products p JOIN users u ON u.id = p.farmer_id
        WHERE p.id = ?${partnerListing ? " AND p.status = 'active'" : ''}`,
       [id]

@@ -8,14 +8,41 @@ Shamba Direct is a REST API for a farmer-to-buyer produce marketplace in Kenya. 
 
 Interactive docs: https://kiptoo345.github.io/Shamba-direct-webapp/
 
-## Authentication
+## Authentication and safe public testing
 
-The endpoints documented below are **public**. No token, API key or header is needed, so you can call them as shown in the examples.
+Every `/api/...` request requires an `X-API-Key` header, including in local development. Configure separate long, random values for `API_KEY_RING_PARTNER` and `API_KEY_TEAM` in ignored `server/.env`. The ring-partner key is read-only and limited to listings, market prices, farmer ratings, and headquarters; the team key can access the full API.
 
-The documented endpoints do not return private fields such as phone numbers, national IDs or password hashes.
+Missing or invalid keys receive HTTP `401`. Authenticated requests are limited to **100 per API key per minute**. Exceeding the limit returns HTTP `429` JSON and a `Retry-After` header (seconds until requests are accepted again).
+
+Example responses:
+
+```http
+HTTP/1.1 401 Unauthorized
+Content-Type: application/json
+
+{"error":"A valid X-API-Key header is required"}
+```
+
+```http
+HTTP/1.1 429 Too Many Requests
+Retry-After: 60
+Content-Type: application/json
+
+{"error":"Rate limit exceeded","retryAfter":60}
+```
+
+API keys identify API consumers, not individual users. The team key grants team-level access and must stay on trusted backends. Use the isolated synthetic database described in [Temporary public testing](#temporary-public-testing) for public demos; never expose the normal `shamba_direct_db` through a public tunnel.
+
+The React app currently calls the API directly from the browser. Do not place the team key in a `REACT_APP_*` variable or client bundle; a trusted server-side proxy is needed before deploying the browser app against this protected API.
+
+Never put an API key in a URL, source control, or public document. Send each consumer only its own key through a private channel.
+
+```bash
+curl -H 'X-API-Key: YOUR_API_KEY' http://localhost:5000/api/listings
+```
 
 - **Full API reference:** open [`docs/index.html`](docs/index.html) in a browser — every endpoint, with request and response samples. Nothing to install or run. (Generated from [`openapi.yaml`](openapi.yaml); see [Rebuilding the docs](#rebuilding-the-docs).)
-- **Base URL:** `http://localhost:5000` — there is no hosted copy, so you run the API yourself (next section, ~5 minutes).
+- **Local base URL:** `http://localhost:5000`. A temporary public tunnel URL is created only while your computer and server are running; it changes when the tunnel restarts.
 ## 1. Run the API locally (from a clean clone)
 
 ### Prerequisites
@@ -51,9 +78,7 @@ cd server
 cp .env.example .env
 ```
 
-*(PowerShell: `Copy-Item .env.example .env`.)* Open `server/.env` and replace `your_mysql_password` with your real MySQL root password. Leave everything else as it is.
-
-Open `.env` and set DB_USER and DB_PASSWORD, to match your MySQL login in the example. Leave the rest as they are.
+*(PowerShell: `Copy-Item .env.example .env`.)* Open `server/.env` and set `DB_USER` and `DB_PASSWORD` for your MySQL login. Generate two different API keys and set `API_KEY_RING_PARTNER` and `API_KEY_TEAM`; the API rejects all `/api` requests until at least one key is configured. Generate each key using `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` and keep the values private.
 
 ### 4. Install and start
 
@@ -79,7 +104,7 @@ You should see this line (the `dotenv` library may print a couple of `injected e
 In a new terminal:
 
 ```bash
-curl http://localhost:5000/api/listings
+curl -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/listings
 ```
 
 You should get a JSON array of active listings back, with status `200`:
@@ -102,10 +127,50 @@ The real response contains every active listing. This one is trimmed to the firs
 On Windows PowerShell, use `curl.exe` instead of `curl`:
 
 ```powershell
-curl.exe http://localhost:5000/api/listings
+curl.exe -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/listings
 ```
 
 If you get a connection error, the API isn't running. Check that the server terminal says `Server is running on http://localhost:5000`.
+
+## Temporary public testing
+
+Use this only for short-lived testing. The public demo database is separate from `shamba_direct_db` and contains synthetic data only. Importing the script creates `shamba_direct_public_demo`; it does not copy or alter the normal database.
+
+1. From the repository root, load the isolated sample database:
+
+   ```powershell
+   Get-Content .\server\sql\public-demo.sql | mysql -u root -p --default-character-set=utf8mb4
+   ```
+
+2. In `server/.env`, set:
+
+   ```dotenv
+   DB_NAME=shamba_direct_public_demo
+   API_KEY_RING_PARTNER=replace-with-a-unique-long-random-key
+   API_KEY_TEAM=replace-with-a-different-long-random-key
+   API_RATE_LIMIT_MAX=100
+   ```
+
+   Generate each key independently with `node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"` and paste the outputs into the ignored `.env` file. Keep both keys private.
+
+3. Start the API from `server` with `npm start`. In another terminal, start a Cloudflare Quick Tunnel using the official `cloudflared` CLI:
+
+   ```powershell
+   cloudflared tunnel --url http://localhost:5000
+   ```
+
+   Share the generated `https://....trycloudflare.com` URL as the API base URL. It is temporary and is reachable only while the API and tunnel are running.
+
+4. Tell callers to include the token header, for example:
+
+   ```powershell
+
+   curl.exe -H "X-API-Key: $env:API_KEY_RING_PARTNER" https://YOUR-TUNNEL-URL/api/listings
+   ```
+
+   Send the ring-partner key privately to that consumer. Do not paste it into public group chats or URLs. Stop `cloudflared` with Ctrl+C when testing ends. Restore `DB_NAME=shamba_direct_db` before returning to normal local development.
+
+The demo login accounts use the synthetic phone numbers `07000000001` (farmer) and `07000000002` (buyer), both with password `DemoOnly123!`. These credentials are for the disposable demo database only. Every API request requires its consumer's API key.
 
 
 ## Endpoint examples
@@ -115,7 +180,7 @@ If you get a connection error, the API isn't running. Check that the server term
 Returns all active produce listings. 
 
 ```bash
-curl http://localhost:5000/api/listings
+curl -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/listings
 ```
 
 Response `200` (trimmed to the first item):
@@ -138,7 +203,7 @@ Response `200` (trimmed to the first item):
 Returns one listing with farmer details.
 
 ```bash
-curl http://localhost:5000/api/listings/1
+curl -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/listings/1
 ```
 
 Response `200`:
@@ -165,7 +230,7 @@ Response `200`:
 Returns current market prices per kg.
 
 ```bash
-curl http://localhost:5000/api/market-prices
+curl -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/market-prices
 ```
 
 Response `200` (trimmed to the first item):
@@ -185,7 +250,7 @@ Response `200` (trimmed to the first item):
 Returns the average rating of each verified, rated farmer.
 
 ```bash
-curl http://localhost:5000/api/farmers/ratings
+curl -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/farmers/ratings
 ```
 
 Response `200`:
@@ -205,7 +270,7 @@ Response `200`:
 Returns the rating for one verified farmer. The response is an array with one item.
 
 ```bash
-curl http://localhost:5000/api/farmers/1/rating
+curl -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/farmers/1/rating
 ```
 
 Response `200`:
@@ -225,7 +290,7 @@ Response `200`:
 Returns all Shamba Direct hubs. Optional query parameter: `county`. `latitude` and `longitude` are `null` when a hub has no coordinates.
 
 ```bash
-curl http://localhost:5000/api/headquarters
+curl -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/headquarters
 ```
 
 Response `200`:
@@ -248,7 +313,7 @@ Response `200`:
 Returns one hub.
 
 ```bash
-curl http://localhost:5000/api/headquarters/1
+curl -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/headquarters/1
 ```
 
 Response `200`:
@@ -269,7 +334,7 @@ Response `200`:
 Sends an enquiry from a buyer to the farmer who owns a listing. All three fields are required. The listing and the buyer must exist.
 
 ```bash
-curl -X POST http://localhost:5000/api/enquiries \
+curl -X POST -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/enquiries \
   -H "Content-Type: application/json" \
   -d '{"product_id":1,"buyer_id":3,"message":"I am interested in 200kg of tomatoes"}'
 ```
@@ -289,7 +354,7 @@ On Windows PowerShell, quotes inside `-d` get stripped. Save the body to a file 
 
 ```powershell
 '{"product_id":1,"buyer_id":3,"message":"I am interested in 200kg of tomatoes"}' | Set-Content -Encoding ascii enquiry.json
-curl.exe -X POST http://localhost:5000/api/enquiries -H "Content-Type: application/json" -d "@enquiry.json"
+curl.exe -X POST -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/enquiries -H "Content-Type: application/json" -d "@enquiry.json"
 ```
 
 ## Errors
@@ -308,7 +373,7 @@ A 2xx status means success. Any other status means the request failed, and the b
 ### 404: resource not found
 
 ```bash
-curl http://localhost:5000/api/listings/999999
+curl -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/listings/999999
 ```
 
 Response `404`:
@@ -320,7 +385,7 @@ Response `404`:
 ### 404: farmer not found
 
 ```bash
-curl http://localhost:5000/api/farmers/999999/rating
+curl -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/farmers/999999/rating
 ```
 
 Response `404`:
@@ -332,7 +397,7 @@ Response `404`:
 ### 400: id is not an integer
 
 ```bash
-curl http://localhost:5000/api/listings/abc
+curl -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/listings/abc
 ```
 
 Response `400`:
@@ -344,7 +409,7 @@ Response `400`:
 ### 400: missing required fields
 
 ```bash
-curl -X POST http://localhost:5000/api/enquiries \
+curl -X POST -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/enquiries \
   -H "Content-Type: application/json" \
   -d '{}'
 ```
@@ -407,7 +472,7 @@ Server is running on http://localhost:5000
 **5. Check it can reach the database**
 
 ```bash
-curl http://localhost:5000/api/test-db
+curl -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/test-db
 ```
 
 **Response** — `200 OK`
@@ -430,7 +495,7 @@ If you get `{"error":"Database connection failed", ...}` instead, see [Troublesh
 One command, no account, no token:
 
 ```bash
-curl http://localhost:5000/api/products
+curl -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/products
 ```
 
 **Response** — `200 OK`
@@ -480,15 +545,9 @@ That is the seeded marketplace: two active listings. Prices and quantities are s
 
 ## 3. Authentication
 
-**There is no token authentication yet. Every endpoint is public — you do not send an `Authorization` header, and if you send one it is ignored.** Real authentication is planned for Week 9; this section will change then.
+Every `/api/...` request requires the `X-API-Key` header. For a request example, see [Authentication and safe public testing](#authentication-and-safe-public-testing). The key identifies the API consumer; it does not authenticate a particular user or create a login session. Send the ring-partner key only for its read-only endpoints and keep the team key on a trusted backend.
 
-What exists today:
-
-- **`POST /api/auth/login`** checks a phone number and password and returns that user's profile. It does **not** return a token or start a session — there is nothing to attach to later requests.
-- Calls that act "as" someone identify them by sending their id in the body (`buyerId`, `farmerId`). Nothing verifies the caller really is that user yet.
-- Passwords are stored hashed (bcrypt) and are never returned.
-
-Placeholder for when tokens arrive (**not implemented — do not use yet**): `Authorization: Bearer <token>`.
+Missing or invalid API keys receive HTTP `401`. Requests above the default **100 per minute per key** receive HTTP `429`, JSON, and a `Retry-After` header.
 
 ## 4. Examples — one per major endpoint
 
@@ -499,7 +558,7 @@ Every example below was run against a freshly imported database, **in this order
 **Register** a buyer (`role` is `farmer` or `buyer`; `fullName`, `phoneNumber`, `password`, `role` are required):
 
 ```bash
-curl -X POST http://localhost:5000/api/auth/register -H "Content-Type: application/json" -d '{"role":"buyer","fullName":"Test Buyer","phoneNumber":"0700000001","password":"secret123","county":"Nairobi","companyName":"Test Foods Ltd"}'
+curl -X POST -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/auth/register -H "Content-Type: application/json" -d '{"role":"buyer","fullName":"Test Buyer","phoneNumber":"0700000001","password":"secret123","county":"Nairobi","companyName":"Test Foods Ltd"}'
 ```
 
 **Response** — `201 Created`
@@ -514,7 +573,7 @@ curl -X POST http://localhost:5000/api/auth/register -H "Content-Type: applicati
 **Log in** with the same phone number and password:
 
 ```bash
-curl -X POST http://localhost:5000/api/auth/login -H "Content-Type: application/json" -d '{"phoneNumber":"0700000001","password":"secret123"}'
+curl -X POST -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/auth/login -H "Content-Type: application/json" -d '{"phoneNumber":"0700000001","password":"secret123"}'
 ```
 
 **Response** — `200 OK`
@@ -546,7 +605,7 @@ curl -X POST http://localhost:5000/api/auth/login -H "Content-Type: application/
 **Get one product** — also adds 1 to its `views`:
 
 ```bash
-curl http://localhost:5000/api/products/1
+curl -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/products/1
 ```
 
 **Response** — `200 OK`
@@ -574,7 +633,7 @@ curl http://localhost:5000/api/products/1
 **List and filter** — optional query filters: `county`, `category`, `farmerId`, `status`, `minQuantity`. No matches returns `[]`, not an error:
 
 ```bash
-curl "http://localhost:5000/api/products?county=Kirinyaga&category=Vegetables"
+curl -H "X-API-Key: YOUR_API_KEY" "http://localhost:5000/api/products?county=Kirinyaga&category=Vegetables"
 ```
 
 **Response** — `200 OK`
@@ -604,7 +663,7 @@ curl "http://localhost:5000/api/products?county=Kirinyaga&category=Vegetables"
 **Create** a listing (required: `farmerId`, `name`, `pricePerKg`, `quantityKg`; new listings start as `pending_review` unless you set `status`):
 
 ```bash
-curl -X POST http://localhost:5000/api/products -H "Content-Type: application/json" -d '{"farmerId":1,"name":"Kale","category":"Vegetables","pricePerKg":30,"quantityKg":200,"county":"Kirinyaga","harvestNote":"Picked this morning"}'
+curl -X POST -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/products -H "Content-Type: application/json" -d '{"farmerId":1,"name":"Kale","category":"Vegetables","pricePerKg":30,"quantityKg":200,"county":"Kirinyaga","harvestNote":"Picked this morning"}'
 ```
 
 **Response** — `201 Created`
@@ -619,7 +678,7 @@ curl -X POST http://localhost:5000/api/products -H "Content-Type: application/js
 **Update** — send only the fields you want to change (`status` is one of `pending_review`, `active`, `sold_out`):
 
 ```bash
-curl -X PUT http://localhost:5000/api/products/3 -H "Content-Type: application/json" -d '{"pricePerKg":35,"status":"active"}'
+curl -X PUT -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/products/3 -H "Content-Type: application/json" -d '{"pricePerKg":35,"status":"active"}'
 ```
 
 **Response** — `200 OK`
@@ -637,7 +696,7 @@ curl -X PUT http://localhost:5000/api/products/3 -H "Content-Type: application/j
 **Place an order** — computes `totalPrice` from the listing's price and reduces its available quantity:
 
 ```bash
-curl -X POST http://localhost:5000/api/orders -H "Content-Type: application/json" -d '{"productId":1,"buyerId":4,"quantityKg":50}'
+curl -X POST -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/orders -H "Content-Type: application/json" -d '{"productId":1,"buyerId":4,"quantityKg":50}'
 ```
 
 **Response** — `201 Created`
@@ -653,7 +712,7 @@ curl -X POST http://localhost:5000/api/orders -H "Content-Type: application/json
 **List orders** — filters: `farmerId`, `buyerId`, `status`:
 
 ```bash
-curl "http://localhost:5000/api/orders?buyerId=4"
+curl -H "X-API-Key: YOUR_API_KEY" "http://localhost:5000/api/orders?buyerId=4"
 ```
 
 **Response** — `200 OK`
@@ -684,7 +743,7 @@ curl "http://localhost:5000/api/orders?buyerId=4"
 **Change an order's status** (`pending`, `confirmed`, `delivered`, `cancelled`):
 
 ```bash
-curl -X PUT http://localhost:5000/api/orders/1 -H "Content-Type: application/json" -d '{"status":"confirmed"}'
+curl -X PUT -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/orders/1 -H "Content-Type: application/json" -d '{"status":"confirmed"}'
 ```
 
 **Response** — `200 OK`
@@ -700,7 +759,7 @@ curl -X PUT http://localhost:5000/api/orders/1 -H "Content-Type: application/jso
 **Rate a farmer** (`rating` is a whole number 1–5; `orderId` and `reviewText` optional):
 
 ```bash
-curl -X POST http://localhost:5000/api/ratings -H "Content-Type: application/json" -d '{"farmerId":1,"buyerId":4,"orderId":1,"rating":5,"reviewText":"Fresh and on time"}'
+curl -X POST -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/ratings -H "Content-Type: application/json" -d '{"farmerId":1,"buyerId":4,"orderId":1,"rating":5,"reviewText":"Fresh and on time"}'
 ```
 
 **Response** — `201 Created`
@@ -715,7 +774,7 @@ curl -X POST http://localhost:5000/api/ratings -H "Content-Type: application/jso
 **Get a farmer's ratings** — with `farmerId` you also get the average and count. (`averageRating` is a string like `"5.0"`, or the number `0` if the farmer has no ratings yet.)
 
 ```bash
-curl "http://localhost:5000/api/ratings?farmerId=1"
+curl -H "X-API-Key: YOUR_API_KEY" "http://localhost:5000/api/ratings?farmerId=1"
 ```
 
 **Response** — `200 OK`
@@ -743,7 +802,7 @@ curl "http://localhost:5000/api/ratings?farmerId=1"
 **Send an enquiry** about a listing (the API looks up the farmer from the listing):
 
 ```bash
-curl -X POST http://localhost:5000/api/enquiries -H "Content-Type: application/json" -d '{"productId":1,"buyerId":4,"message":"Can you deliver to Nairobi?"}'
+curl -X POST -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/enquiries -H "Content-Type: application/json" -d '{"productId":1,"buyerId":4,"message":"Can you deliver to Nairobi?"}'
 ```
 
 **Response** — `201 Created`
@@ -758,7 +817,7 @@ curl -X POST http://localhost:5000/api/enquiries -H "Content-Type: application/j
 **List a farmer's enquiries:**
 
 ```bash
-curl "http://localhost:5000/api/enquiries?farmerId=1"
+curl -H "X-API-Key: YOUR_API_KEY" "http://localhost:5000/api/enquiries?farmerId=1"
 ```
 
 **Response** — `200 OK`
@@ -783,7 +842,7 @@ curl "http://localhost:5000/api/enquiries?farmerId=1"
 **Submit the About & Contact form** (required: `name`, `contactInfo`, `message`):
 
 ```bash
-curl -X POST http://localhost:5000/api/contact -H "Content-Type: application/json" -d '{"name":"Wanjiru","contactInfo":"wanjiru@example.com","subject":"Partnership","message":"Hello, we would like to buy maize."}'
+curl -X POST -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/contact -H "Content-Type: application/json" -d '{"name":"Wanjiru","contactInfo":"wanjiru@example.com","subject":"Partnership","message":"Hello, we would like to buy maize."}'
 ```
 
 **Response** — `201 Created`
@@ -800,7 +859,7 @@ curl -X POST http://localhost:5000/api/contact -H "Content-Type: application/jso
 **List headquarters:**
 
 ```bash
-curl http://localhost:5000/api/headquarters
+curl -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/headquarters
 ```
 
 **Response** — `200 OK`
@@ -822,7 +881,7 @@ curl http://localhost:5000/api/headquarters
 **List market prices** — optional `county` filter:
 
 ```bash
-curl "http://localhost:5000/api/market-prices?county=Nyandarua"
+curl -H "X-API-Key: YOUR_API_KEY" "http://localhost:5000/api/market-prices?county=Nyandarua"
 ```
 
 **Response** — `200 OK`
@@ -844,7 +903,7 @@ curl "http://localhost:5000/api/market-prices?county=Nyandarua"
 **Delete an order** (every `DELETE /…/{id}` works the same way):
 
 ```bash
-curl -X DELETE http://localhost:5000/api/orders/1
+curl -X DELETE -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/orders/1
 ```
 
 **Response** — `200 OK`
@@ -914,7 +973,7 @@ Full request/response detail for each is in [`docs/index.html`](docs/index.html)
 **404 — record not found**
 
 ```bash
-curl http://localhost:5000/api/products/9999
+curl -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/products/9999
 ```
 
 **Response** — `404 Not Found`
@@ -928,7 +987,7 @@ curl http://localhost:5000/api/products/9999
 **400 — missing required fields** (the message lists them):
 
 ```bash
-curl -X POST http://localhost:5000/api/products -H "Content-Type: application/json" -d '{"name":"Kale"}'
+curl -X POST -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/products -H "Content-Type: application/json" -d '{"name":"Kale"}'
 ```
 
 **Response** — `400 Bad Request`
@@ -942,7 +1001,7 @@ curl -X POST http://localhost:5000/api/products -H "Content-Type: application/js
 **400 — value out of range:**
 
 ```bash
-curl -X POST http://localhost:5000/api/orders -H "Content-Type: application/json" -d '{"productId":1,"buyerId":4,"quantityKg":0}'
+curl -X POST -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/orders -H "Content-Type: application/json" -d '{"productId":1,"buyerId":4,"quantityKg":0}'
 ```
 
 **Response** — `400 Bad Request`
@@ -956,7 +1015,7 @@ curl -X POST http://localhost:5000/api/orders -H "Content-Type: application/json
 **401 — bad credentials:**
 
 ```bash
-curl -X POST http://localhost:5000/api/auth/login -H "Content-Type: application/json" -d '{"phoneNumber":"0700000001","password":"wrong"}'
+curl -X POST -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/auth/login -H "Content-Type: application/json" -d '{"phoneNumber":"0700000001","password":"wrong"}'
 ```
 
 **Response** — `401 Unauthorized`
@@ -970,7 +1029,7 @@ curl -X POST http://localhost:5000/api/auth/login -H "Content-Type: application/
 **409 — phone number already registered** (run after the register example above):
 
 ```bash
-curl -X POST http://localhost:5000/api/auth/register -H "Content-Type: application/json" -d '{"role":"buyer","fullName":"Test Buyer","phoneNumber":"0700000001","password":"secret123"}'
+curl -X POST -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/auth/register -H "Content-Type: application/json" -d '{"role":"buyer","fullName":"Test Buyer","phoneNumber":"0700000001","password":"secret123"}'
 ```
 
 **Response** — `409 Conflict`
@@ -984,7 +1043,7 @@ curl -X POST http://localhost:5000/api/auth/register -H "Content-Type: applicati
 **400 — body isn't valid JSON:**
 
 ```bash
-curl -X POST http://localhost:5000/api/products -H "Content-Type: application/json" -d '{bad json'
+curl -X POST -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/products -H "Content-Type: application/json" -d '{bad json'
 ```
 
 **Response** — `400 Bad Request`
@@ -998,7 +1057,7 @@ curl -X POST http://localhost:5000/api/products -H "Content-Type: application/js
 **404 — URL doesn't exist:**
 
 ```bash
-curl http://localhost:5000/api/nope
+curl -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/nope
 ```
 
 **Response** — `404 Not Found`
@@ -1012,7 +1071,7 @@ curl http://localhost:5000/api/nope
 **500 — database rejected the request** (`farmerId` 9999 doesn't exist):
 
 ```bash
-curl -X POST http://localhost:5000/api/products -H "Content-Type: application/json" -d '{"farmerId":9999,"name":"Kale","pricePerKg":30,"quantityKg":200}'
+curl -X POST -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/products -H "Content-Type: application/json" -d '{"farmerId":9999,"name":"Kale","pricePerKg":30,"quantityKg":200}'
 ```
 
 **Response** — `500 Internal Server Error`
@@ -1028,7 +1087,7 @@ curl -X POST http://localhost:5000/api/products -H "Content-Type: application/js
 If you forget `-H "Content-Type: application/json"`, curl sends the body as a form instead, the API ignores it, and you get a **400 that complains the fields are missing even though you sent them**:
 
 ```bash
-curl -X POST http://localhost:5000/api/products -d '{"farmerId":1,"name":"Kale","pricePerKg":30,"quantityKg":200}'
+curl -X POST -H "X-API-Key: YOUR_API_KEY" http://localhost:5000/api/products -d '{"farmerId":1,"name":"Kale","pricePerKg":30,"quantityKg":200}'
 ```
 
 **Response** — `400 Bad Request`

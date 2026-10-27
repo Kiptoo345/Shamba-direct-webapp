@@ -13,7 +13,8 @@ router.get('/', async (req, res) => {
 
   try {
     const [rows] = await db.query(
-      `SELECT e.*, p.name AS product_name, buyer.full_name AS buyer_name
+      `SELECT e.id, e.product_id, e.buyer_id, e.farmer_id, e.message, e.created_at,
+              p.name AS product_name, buyer.full_name AS buyer_name
        FROM enquiries e
        JOIN products p ON p.id = e.product_id
        LEFT JOIN users buyer ON buyer.id = e.buyer_id

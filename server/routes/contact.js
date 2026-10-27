@@ -23,7 +23,11 @@ router.post('/', async (req, res) => {
 // GET /api/contact  (SELECT — admin inbox view)
 router.get('/', async (req, res) => {
   try {
-    const [rows] = await db.query('SELECT * FROM contact_messages ORDER BY created_at DESC');
+    const [rows] = await db.query(
+      `SELECT id, name, contact_info, subject, message, created_at
+       FROM contact_messages
+       ORDER BY created_at DESC`
+    );
     res.json(rows);
   } catch (error) {
     console.error('Error fetching contact messages:', error);

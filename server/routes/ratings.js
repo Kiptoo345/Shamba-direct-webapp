@@ -10,7 +10,8 @@ router.get('/', async (req, res) => {
   try {
     if (farmerId) {
       const [rows] = await db.query(
-        `SELECT fr.*, u.full_name AS farmer_name 
+        `SELECT fr.id, fr.farmer_id, fr.buyer_id, fr.order_id, fr.rating,
+                fr.review_text, fr.created_at, u.full_name AS farmer_name
         FROM farmer_ratings fr 
         JOIN users u ON fr.farmer_id = u.id 
         WHERE fr.farmer_id = ? 
@@ -23,10 +24,18 @@ router.get('/', async (req, res) => {
       return res.json({ ratings: rows, averageRating: agg.average_rating || 0, reviewCount: agg.review_count });
     }
     if (buyerId) {
-      const [rows] = await db.query('SELECT * FROM farmer_ratings WHERE buyer_id = ? ORDER BY created_at DESC', [buyerId]);
+      const [rows] = await db.query(
+        `SELECT id, farmer_id, buyer_id, order_id, rating, review_text, created_at
+         FROM farmer_ratings
+         WHERE buyer_id = ?
+         ORDER BY created_at DESC`,
+        [buyerId]
+      );
       return res.json(rows);
     }
-    const [rows] = await db.query('SELECT * FROM farmer_ratings ORDER BY created_at DESC');
+    const [rows] = await db.query(
+      'SELECT id, farmer_id, buyer_id, order_id, rating, review_text, created_at FROM farmer_ratings ORDER BY created_at DESC'
+    );
     res.json(rows);
   } catch (error) {
     console.error('Error fetching ratings:', error);

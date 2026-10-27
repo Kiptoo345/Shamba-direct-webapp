@@ -3,16 +3,6 @@ const router = express.Router();
 const bcrypt = require('bcryptjs');
 const db = require('../db');
 
-// Never send these fields back to the client
-const PRIVATE_FARMER_FIELDS = ['national_id'];
-
-function stripPrivateFields(user) {
-  const clean = { ...user };
-  delete clean.password_hash;
-  PRIVATE_FARMER_FIELDS.forEach((f) => delete clean[f]);
-  return clean;
-}
-
 // -----------------------------------------------------------------------
 // POST /api/auth/register  (INSERT users [+ farmer_profiles/company_profiles])
 // -----------------------------------------------------------------------
@@ -38,6 +28,9 @@ router.post('/register', async (req, res) => {
 
   if (!fullName || !phoneNumber || !password || !role) {
     return res.status(400).json({ error: 'fullName, phoneNumber, password and role are required' });
+  }
+  if (!['farmer', 'buyer'].includes(role)) {
+    return res.status(400).json({ error: 'role must be farmer or buyer' });
   }
 
   const connection = await db.getConnection();
@@ -90,7 +83,11 @@ router.post('/login', async (req, res) => {
     return res.status(400).json({ error: 'phoneNumber and password are required' });
   }
   try {
-    const [users] = await db.query('SELECT * FROM users WHERE phone_number = ?', [phoneNumber]);
+    const [users] = await db.query(
+      `SELECT id, full_name, password_hash, role, county, is_verified
+       FROM users WHERE phone_number = ?`,
+      [phoneNumber]
+    );
     if (users.length === 0) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
@@ -100,16 +97,14 @@ router.post('/login', async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    let profile = null;
-    if (user.role === 'farmer') {
-      const [rows] = await db.query('SELECT farm_size, main_crops FROM farmer_profiles WHERE user_id = ?', [user.id]);
-      profile = rows[0] || null;
-    } else if (user.role === 'buyer') {
-      const [rows] = await db.query('SELECT company_name, business_type, delivery_address FROM company_profiles WHERE user_id = ?', [user.id]);
-      profile = rows[0] || null;
-    }
-
-    res.json({ message: 'Login successful', user: { ...stripPrivateFields(user), profile } });
+    const publicUser = {
+      id: user.id,
+      full_name: user.full_name,
+      role: user.role,
+      county: user.county,
+      is_verified: user.is_verified
+    };
+    res.json({ message: 'Login successful', user: publicUser });
   } catch (error) {
     console.error('Login error:', error);
     res.status(500).json({ error: 'Login failed' });

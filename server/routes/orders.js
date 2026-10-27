@@ -17,7 +17,9 @@ router.get('/', async (req, res) => {
     // dashboard can show exactly who ordered and how to reach/deliver to
     // them, without exposing this on any public/read-only endpoint.
     const [orders] = await db.query(
-      `SELECT o.*, p.name AS product_name,
+      `SELECT o.id, o.product_id, o.buyer_id, o.farmer_id, o.quantity_kg,
+              o.total_price, o.status, o.created_at, o.updated_at,
+              p.name AS product_name,
               buyer.full_name AS buyer_name, buyer.phone_number AS buyer_phone, buyer.county AS buyer_county,
               cp.company_name AS buyer_company_name, cp.delivery_address AS buyer_delivery_address,
               farmer.full_name AS farmer_name
