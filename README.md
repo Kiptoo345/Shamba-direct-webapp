@@ -146,8 +146,8 @@ Use this only for short-lived testing. The public demo database is separate from
 
    ```dotenv
    DB_NAME=shamba_direct_public_demo
-   API_KEY_RING_PARTNER=replace-with-a-unique-long-random-key
-   API_KEY_TEAM=replace-with-a-different-long-random-key
+   API_KEY_RING_PARTNER=4a402348702167e547a61832d1c7251da79c70597ac21b98816a60996c52a27f
+   API_KEY_TEAM=de069be5b05b3fb7fdc9f300e69b8984da258087637ef38168f9e7b7815fd7ab
    API_RATE_LIMIT_MAX=100
    ```
 
