@@ -12,6 +12,9 @@
     "testPathIgnorePatterns": [
       "/node_modules/",
       "__tests__/partner-suite/"
+    ],
+    "setupFiles": [
+      "<rootDir>/test-setup.js"
     ]
   },
   "keywords": [],
