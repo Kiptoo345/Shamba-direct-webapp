@@ -173,10 +173,10 @@ function FarmerDashboard({ user, onLogout }) {
           <div className="dash-user-name">{user.full_name}</div>
           <div className="dash-user-role">🌾 {user.is_verified ? 'Verified Farmer' : 'Farmer'}</div>
         </div>
-        <div className="dash-nav-item active">📊 <span>Overview</span></div>
-        <div className="dash-nav-item">📋 <span>My Listings</span></div>
-        <div className="dash-nav-item">📦 <span>Orders</span></div>
-        <div className="dash-nav-item">💰 <span>Earnings</span></div>
+        <a className="dash-nav-item active" href="#overview">📊 <span>Overview</span></a>
+        <a className="dash-nav-item" href="#listings">📋 <span>My Listings</span></a>
+        <a className="dash-nav-item" href="#orders">📦 <span>Orders</span></a>
+        <a className="dash-nav-item" href="#earnings">💰 <span>Earnings</span></a>
         <button
           type="button"
           className="dash-nav-item"
@@ -189,7 +189,7 @@ function FarmerDashboard({ user, onLogout }) {
 
       {/* Main Area */}
       <main className="dash-main">
-        <div className="dash-header">
+        <div className="dash-header" id="overview">
           <h2>Good day, {user.full_name.split(' ')[0]} 👋</h2>
           <p>Here's your Shamba Direct activity — {new Date().toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
@@ -198,7 +198,7 @@ function FarmerDashboard({ user, onLogout }) {
 
         {/* Metrics */}
         <div className="dash-metrics">
-          <div className="metric-card">
+          <div className="metric-card" id="earnings">
             <div className="metric-label">Total Delivered Earnings</div>
             <div className="metric-value">KES {monthEarnings.toLocaleString()}</div>
             <div className="metric-sub">From delivered orders</div>
@@ -221,7 +221,7 @@ function FarmerDashboard({ user, onLogout }) {
         </div>
 
         {/* Active Listings Table */}
-        <div className="dash-table-card">
+        <div className="dash-table-card" id="listings">
           <div className="dash-table-title">
             <span>My Listings</span>
             <button className="post-btn" type="button" onClick={() => { setShowForm((s) => !s); setEditingId(null); setNewListing(EMPTY_LISTING); }}>
@@ -296,7 +296,7 @@ function FarmerDashboard({ user, onLogout }) {
         </div>
 
         {/* Orders Table */}
-        <div className="dash-table-card">
+        <div className="dash-table-card" id="orders">
           <div className="dash-table-title">
             <span>Recent Orders</span>
             <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)' }}>
@@ -492,9 +492,9 @@ function BuyerDashboard({ user, onLogout }) {
           <div className="dash-user-name">{user.full_name}</div>
           <div className="dash-user-role">🏢 Buyer / Company</div>
         </div>
-        <div className="dash-nav-item active">📊 <span>Overview</span></div>
+        <a className="dash-nav-item active" href="#overview">📊 <span>Overview</span></a>
         <Link className="dash-nav-item" to="/marketplace">🛒 <span>Browse Marketplace</span></Link>
-        <div className="dash-nav-item">📦 <span>My Orders</span></div>
+        <a className="dash-nav-item" href="#orders">📦 <span>My Orders</span></a>
         <button
           type="button"
           className="dash-nav-item"
@@ -507,7 +507,7 @@ function BuyerDashboard({ user, onLogout }) {
 
       {/* Main Area */}
       <main className="dash-main">
-        <div className="dash-header">
+        <div className="dash-header" id="overview">
           <h2>Good day, {user.full_name.split(' ')[0]} 👋</h2>
           <p>Here's your Shamba Direct activity — {new Date().toLocaleDateString('en-KE', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
         </div>
@@ -534,7 +534,7 @@ function BuyerDashboard({ user, onLogout }) {
         </div>
 
         {/* Orders Table */}
-        <div className="dash-table-card">
+        <div className="dash-table-card" id="orders">
           <div className="dash-table-title">
             <span>My Orders</span>
             <Link className="post-btn" to="/marketplace">+ Browse & Place an Order</Link>

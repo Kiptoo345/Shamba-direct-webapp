@@ -1,4 +1,5 @@
 import { Link } from 'react-router-dom';
+import CropImage from '../components/CropImage';
 import '../styles/shared.css';
 import '../styles/home.css';
 
@@ -37,7 +38,9 @@ function Home() {
                 <span className="hero-card-title">🍅 Fresh Tomatoes</span>
                 <span className="price-badge">KES 45/kg</span>
               </div>
-              <div className="hero-card-img">🍅</div>
+              <div className="hero-card-img">
+                <CropImage name="Fresh Tomatoes" />
+              </div>
               <div className="hero-card-meta">
                 <span className="meta-tag">📍 Kirinyaga</span>
                 <span className="meta-tag">500 kg Available</span>
@@ -49,7 +52,9 @@ function Home() {
                 <span className="hero-card-title">🌽 Grade A Maize</span>
                 <span className="price-badge">KES 32/kg</span>
               </div>
-              <div className="hero-card-img">🌽</div>
+              <div className="hero-card-img">
+                <CropImage name="Grade A Maize" />
+              </div>
               <div className="hero-card-meta">
                 <span className="meta-tag">📍 Uasin Gishu</span>
                 <span className="meta-tag">2,000 kg Available</span>
@@ -150,7 +155,7 @@ function Home() {
           <div className="produce-grid">
             <div className="produce-card">
               <div className="produce-img">
-                <div className="produce-img-emoji">🍅</div>
+                <CropImage name="Roma Tomatoes" />
                 <span className="produce-badge">✅ Verified</span>
               </div>
               <div className="produce-body">
@@ -166,7 +171,7 @@ function Home() {
             </div>
             <div className="produce-card">
               <div className="produce-img">
-                <div className="produce-img-emoji">🌽</div>
+                <CropImage name="Grade A Maize" />
                 <span className="produce-badge">Bulk Available</span>
               </div>
               <div className="produce-body">
@@ -182,7 +187,7 @@ function Home() {
             </div>
             <div className="produce-card">
               <div className="produce-img">
-                <div className="produce-img-emoji">🥔</div>
+                <CropImage name="Shangi Potatoes" />
                 <span className="produce-badge">Best Price</span>
               </div>
               <div className="produce-body">
@@ -198,7 +203,7 @@ function Home() {
             </div>
             <div className="produce-card">
               <div className="produce-img">
-                <div className="produce-img-emoji">🧅</div>
+                <CropImage name="Red Onions" />
                 <span className="produce-badge">High Demand</span>
               </div>
               <div className="produce-body">

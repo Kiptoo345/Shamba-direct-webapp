@@ -33,7 +33,7 @@ Content-Type: application/json
 
 API keys identify API consumers, not individual users. The team key grants team-level access and must stay on trusted backends. Use the isolated synthetic database described in [Temporary public testing](#temporary-public-testing) for public demos; never expose the normal `shamba_direct_db` through a public tunnel.
 
-The React app currently calls the API directly from the browser. Do not place the team key in a `REACT_APP_*` variable or client bundle; a trusted server-side proxy is needed before deploying the browser app against this protected API.
+For local development, the React app uses a same-origin development proxy that reads `API_KEY_TEAM` from `server/.env` and attaches it server-side. Do not place the team key in a `REACT_APP_*` variable or client bundle. Production deployments still need a trusted server-side proxy.
 
 Never put an API key in a URL, source control, or public document. Send each consumer only its own key through a private channel.
 
@@ -146,8 +146,8 @@ Use this only for short-lived testing. The public demo database is separate from
 
    ```dotenv
    DB_NAME=shamba_direct_public_demo
-   API_KEY_RING_PARTNER=4a402348702167e547a61832d1c7251da79c70597ac21b98816a60996c52a27f
-   API_KEY_TEAM=de069be5b05b3fb7fdc9f300e69b8984da258087637ef38168f9e7b7815fd7ab
+   API_KEY_RING_PARTNER=replace-with-a-unique-long-random-key
+   API_KEY_TEAM=replace-with-a-different-long-random-key
    API_RATE_LIMIT_MAX=100
    ```
 

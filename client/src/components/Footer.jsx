@@ -29,6 +29,7 @@ function Footer() {
             <Link className="footer-link" to="/how-it-works">How It Works</Link>
             <Link className="footer-link" to="/contact">About Us</Link>
             <Link className="footer-link" to="/contact">Contact</Link>
+            <Link className="footer-link" to="/safety-support">Safety &amp; Support</Link>
           </div>
           <div>
             <div className="footer-col-title">For Farmers</div>

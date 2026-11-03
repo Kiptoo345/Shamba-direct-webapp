@@ -1,7 +1,8 @@
 // Central place for every network call the app makes.
-// Change REACT_APP_API_URL in client/.env if the API is not on localhost:5000.
+// In development, setupProxy.js forwards /api through the server and adds its
+// API key server-side. Production deployments need an authenticated proxy.
 
-const BASE_URL = process.env.REACT_APP_API_URL || 'http://localhost:5000/api';
+const BASE_URL = process.env.REACT_APP_API_URL || '/api';
 
 async function request(path, { method = 'GET', body } = {}) {
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -53,7 +54,14 @@ export const getEnquiries = (params = {}) => {
   const query = new URLSearchParams(params).toString();
   return request(`/enquiries${query ? `?${query}` : ''}`);
 };
-export const createEnquiry = (payload) => request('/enquiries', { method: 'POST', body: payload });
+export const createEnquiry = ({ productId, buyerId, message }) => request('/enquiries', {
+  method: 'POST',
+  body: {
+    product_id: productId,
+    buyer_id: buyerId,
+    message
+  }
+});
 
 // ---- Contact form -------------------------------------------------------
 export const submitContactMessage = (payload) => request('/contact', { method: 'POST', body: payload });

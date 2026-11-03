@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { getProducts, createEnquiry, createOrder } from '../api/api';
 import { useAuth } from '../context/AuthContext';
+import CropImage from '../components/CropImage';
 import '../styles/shared.css';
 import '../styles/marketplace.css';
 
@@ -194,7 +195,7 @@ function Marketplace() {
             {filtered.map((listing) => (
               <div className="produce-card" key={listing.id}>
                 <div className="produce-img">
-                  <div className="produce-img-emoji">{listing.image_emoji || '🌾'}</div>
+                  <CropImage name={listing.name} category={listing.category} />
                   <span className="produce-badge">{listing.farmer_verified ? '✅ Verified' : 'Unverified'}</span>
                 </div>
                 <div className="produce-body">

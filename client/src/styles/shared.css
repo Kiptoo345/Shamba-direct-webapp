@@ -394,13 +394,15 @@ nav {
   width: 100%;
 }
 
-.produce-img-emoji {
+.produce-img-placeholder {
   align-items: center;
   background: var(--green-light);
+  color: var(--green-dark);
   display: flex;
-  font-size: 5rem;
+  font-weight: 700;
   height: 100%;
   justify-content: center;
+  text-align: center;
   width: 100%;
 }
 

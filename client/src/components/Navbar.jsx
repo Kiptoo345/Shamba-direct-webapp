@@ -5,7 +5,8 @@ const NAV_ITEMS = [
   { to: '/', label: 'Home' },
   { to: '/marketplace', label: 'Marketplace' },
   { to: '/how-it-works', label: 'How It Works' },
-  { to: '/contact', label: 'About & Contact' }
+  { to: '/contact', label: 'About & Contact' },
+  { to: '/safety-support', label: 'Safety & Support' }
 ];
 
 function Navbar() {

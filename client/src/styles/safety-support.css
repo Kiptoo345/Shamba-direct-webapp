@@ -1,0 +1,242 @@
+.safety-page {
+  max-width: 1180px;
+  margin: 0 auto;
+  padding: 3rem 1.25rem 5rem;
+  color: #183126;
+}
+
+.safety-hero {
+  padding: 3rem;
+  border-radius: 24px;
+  background: linear-gradient(130deg, #123d2b, #246b49);
+  color: #fff;
+  margin-bottom: 2.5rem;
+}
+
+.safety-hero h1 {
+  font-size: clamp(2rem, 5vw, 3.5rem);
+  margin: 0.3rem 0 1rem;
+}
+
+.safety-hero p:last-child {
+  max-width: 650px;
+  line-height: 1.7;
+  color: #e0eee5;
+}
+
+.safety-eyebrow {
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  color: #4b966b;
+  margin: 0 0 0.65rem;
+}
+
+.safety-hero .safety-eyebrow {
+  color: #bce4c8;
+}
+
+.safety-section {
+  margin: 2.5rem 0;
+}
+
+.safety-section-heading {
+  display: flex;
+  justify-content: space-between;
+  gap: 1.5rem;
+  align-items: end;
+  flex-wrap: wrap;
+  margin-bottom: 1.5rem;
+}
+
+.safety-section h2 {
+  font-size: clamp(1.5rem, 3vw, 2.2rem);
+  margin: 0.2rem 0 1rem;
+}
+
+.safety-filters {
+  display: flex;
+  gap: 1rem;
+  flex-wrap: wrap;
+}
+
+.safety-filters label,
+.safety-report-form label {
+  display: flex;
+  flex-direction: column;
+  gap: 0.45rem;
+  font-size: 0.9rem;
+  font-weight: 650;
+}
+
+.safety-filters select,
+.safety-report-form input,
+.safety-report-form select,
+.safety-report-form textarea {
+  border: 1px solid #cbd8ce;
+  border-radius: 10px;
+  padding: 0.8rem;
+  background: #fff;
+  color: #183126;
+  font: inherit;
+  min-width: 180px;
+}
+
+.safety-resource-grid {
+  display: grid;
+  grid-template-columns: repeat(
+    auto-fit,
+    minmax(240px, 1fr)
+  );
+  gap: 1rem;
+}
+
+.safety-resource-card {
+  padding: 1.35rem;
+  border: 1px solid #dce7de;
+  border-radius: 16px;
+  background: #fff;
+  box-shadow: 0 8px 24px #173e2810;
+}
+
+.safety-resource-card h3 {
+  margin: 0.8rem 0;
+  font-size: 1.15rem;
+}
+
+.safety-resource-card p {
+  line-height: 1.55;
+  color: #52645a;
+  font-size: 0.92rem;
+}
+
+.safety-resource-type {
+  display: inline-block;
+  border-radius: 99px;
+  background: #e8f4eb;
+  color: #246b49;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.75rem;
+  font-weight: 800;
+  text-transform: capitalize;
+}
+
+.safety-state {
+  padding: 1rem;
+  background: #f4f7f4;
+  border-radius: 12px;
+  color: #52645a;
+}
+
+.safety-report-section {
+  padding: 2rem;
+  border-radius: 20px;
+  background: #f4f8f4;
+}
+
+.safety-intro {
+  max-width: 760px;
+  line-height: 1.65;
+  color: #52645a;
+}
+
+.safety-report-form {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 1rem;
+  margin-top: 1.5rem;
+}
+
+.safety-report-form input,
+.safety-report-form select,
+.safety-report-form textarea {
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.safety-report-form .safety-full {
+  grid-column: 1 / -1;
+}
+
+.safety-report-form .safety-check {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  font-weight: 500;
+}
+
+.safety-report-form .safety-check input {
+  width: auto;
+  min-width: 0;
+}
+
+.safety-submit {
+  justify-self: start;
+  border: 0;
+  border-radius: 10px;
+  background: #246b49;
+  color: #fff;
+  padding: 0.9rem 1.3rem;
+  font-weight: 750;
+  cursor: pointer;
+}
+
+.safety-submit:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.safety-error {
+  color: #a32424;
+  background: #fff0f0;
+  border: 1px solid #f1caca;
+  border-radius: 10px;
+  padding: 0.85rem;
+}
+
+.safety-success {
+  margin-top: 1rem;
+  padding: 1rem;
+  border: 1px solid #b9dec2;
+  border-radius: 12px;
+  background: #eaf7ed;
+  color: #1d5832;
+}
+
+.safety-disclaimer {
+  margin-top: 1.5rem;
+  font-size: 0.85rem;
+  line-height: 1.6;
+  color: #68766d;
+}
+
+@media (max-width: 640px) {
+  .safety-hero {
+    padding: 2rem 1.4rem;
+  }
+
+  .safety-report-section {
+    padding: 1.3rem;
+  }
+
+  .safety-report-form {
+    grid-template-columns: 1fr;
+  }
+
+  .safety-report-form .safety-full {
+    grid-column: auto;
+  }
+
+  .safety-filters {
+    width: 100%;
+  }
+
+  .safety-filters label {
+    flex: 1;
+  }
+
+  .safety-filters select {
+    min-width: 0;
+    width: 100%;
+  }
+}

@@ -131,10 +131,15 @@
   background: rgba(255, 255, 255, 0.1);
   border-radius: 8px;
   display: flex;
-  font-size: 3rem;
   height: 120px;
   justify-content: center;
   margin-bottom: 0.75rem;
+  overflow: hidden;
+  width: 100%;
+}
+
+.hero-card-img img {
+  height: 100%;
   object-fit: cover;
   width: 100%;
 }

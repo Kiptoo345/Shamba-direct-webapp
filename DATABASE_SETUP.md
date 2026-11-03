@@ -130,10 +130,21 @@ DB_USER=root
 DB_PASSWORD=your_actual_mysql_password
 DB_NAME=shamba_direct_db
 DB_PORT=3306
+API_KEY_TEAM=your_generated_team_key
+API_KEY_RING_PARTNER=your_different_generated_partner_key
+API_RATE_LIMIT_MAX=100
 ```
 
-Do not commit `.env`: it contains your database password. The supplied
-`.gitignore` in `server` is intended to keep it out of Git.
+Generate both keys independently with Node.js. Each should be a long random
+value; keep them private and do not put them in the React app or commit `.env`.
+The supplied `.gitignore` in `server` keeps `.env` out of Git.
+
+For example, generate a key from PowerShell without displaying it in a shared
+terminal or document:
+
+```powershell
+node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
+```
 
 Install dependencies and start the API:
 
@@ -143,17 +154,30 @@ npm install
 npm run dev
 ```
 
-With the API running, open this address in a browser:
+Keep the API running and start the React app in a second terminal:
 
-```text
-http://localhost:5000/api/test-db
+```powershell
+Set-Location .\client
+npm start
 ```
 
-A successful response is similar to:
+Open `http://localhost:3000` in a browser. The React development server
+forwards `/api` requests through its local proxy, which reads `API_KEY_TEAM`
+from `server/.env` and attaches it server-side. The key is not embedded in
+browser JavaScript. Keep both servers running in separate terminals. Restart
+both servers after changing `.env`, then reload the browser app.
 
-```json
-{"message":"Database connected successfully!","data":[{"result":2}]}
+To check the API and database directly, use PowerShell in a terminal where the
+key is available:
+
+```powershell
+$env:API_KEY_TEAM = "your_team_key"
+Invoke-RestMethod -Uri http://localhost:5000/api/test-db -Headers @{ "X-API-Key" = $env:API_KEY_TEAM }
 ```
+
+The React development proxy is for local development only. A production
+deployment must use a trusted server-side proxy; do not set the team key in a
+`REACT_APP_*` variable or include it in a client bundle.
 
 ## 5. Optional: use a dedicated application user
 
@@ -197,6 +221,7 @@ schema import as `root` and then test the application user again.
 | `ECONNREFUSED` or cannot connect | Ensure the MySQL service is running and `DB_HOST`/`DB_PORT` match the server configuration. |
 | `Unknown database 'shamba_direct_db'` | Import `server/sql/schema.sql` again using Step 2. |
 | API says database connection failed | Check `server/.env`, then restart `npm run dev` after saving it. |
+| Listings show “A valid X-API-Key header is required” | Make sure `API_KEY_TEAM` is configured in `server/.env`, restart the API and React development server, and access the app through `http://localhost:3000` so its server-side development proxy can attach the key. |
 | Port 3306 is different | Set `DB_PORT` in `server/.env` to the port shown in MySQL Workbench or MySQL configuration. |
 
 ## Database structure
