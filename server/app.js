@@ -4,6 +4,7 @@ const { timingSafeEqual } = require('node:crypto');
 require('dotenv').config();
 
 const db = require('./db');
+const { deprecateV1, v2Envelope } = require('./versioning');
 
 const app = express();
 const rateLimitBuckets = new Map();
@@ -18,6 +19,9 @@ app.use((req, res, next) => {
   if (req.body === undefined) req.body = {};
   next();
 });
+
+// v2 response shape. Registered before auth so 401/403/429 are v2-shaped too.
+app.use('/api/v2', v2Envelope);
 
 app.use('/api', (req, res, next) => {
   const apiKeys = Object.entries(process.env)
@@ -34,6 +38,8 @@ app.use('/api', (req, res, next) => {
     return res.status(401).json({ error: 'A valid X-API-Key header is required' });
   }
 
+  // /api/v1/listings and /api/v2/listings follow the same access rules.
+  const routePath = req.path.replace(/^\/v\d+(?=\/|$)/, '');
   const partnerReadOnlyRoutes = [
     /^\/listings(?:\/\d+)?$/,
     /^\/market-prices$/,
@@ -42,7 +48,7 @@ app.use('/api', (req, res, next) => {
     /^\/headquarters(?:\/\d+)?$/
   ];
   if (matchedKey.consumer === 'RING_PARTNER'
-    && (req.method !== 'GET' || !partnerReadOnlyRoutes.some((route) => route.test(req.path)))) {
+    && (req.method !== 'GET' || !partnerReadOnlyRoutes.some((route) => route.test(routePath)))) {
     return res.status(403).json({ error: 'This API key is read-only and limited to partner data' });
   }
 
@@ -86,17 +92,39 @@ const marketPriceRoutes = require('./routes/marketPrices');
 const farmerRoutes = require('./routes/farmers');
 const salamaRoutes = require('./routes/salama');
 
-app.use('/api/auth', authRoutes);
-app.use('/api/products', productRoutes);
-app.use('/api/listings', productRoutes);
-app.use('/api/orders', orderRoutes);
-app.use('/api/enquiries', enquiryRoutes);
-app.use('/api/contact', contactRoutes);
-app.use('/api/ratings', ratingRoutes);
-app.use('/api/headquarters', headquartersRoutes);
-app.use('/api/market-prices', marketPriceRoutes);
-app.use('/api/farmers', farmerRoutes);
+// The same handlers serve every API version; versions differ only in
+// middleware (headers for v1, response envelope for v2).
+function buildApiRouter() {
+  const router = express.Router();
+  router.use('/auth', authRoutes);
+  router.use('/products', productRoutes);
+  router.use('/listings', productRoutes);
+  router.use('/orders', orderRoutes);
+  router.use('/enquiries', enquiryRoutes);
+  router.use('/contact', contactRoutes);
+  router.use('/ratings', ratingRoutes);
+  router.use('/headquarters', headquartersRoutes);
+  router.use('/market-prices', marketPriceRoutes);
+  router.use('/farmers', farmerRoutes);
+  return router;
+}
+
+// v2: current version.
+const v2Router = buildApiRouter();
+v2Router.use((req, res) => res.status(404).json({ error: 'Route not found' }));
+app.use('/api/v2', v2Router);
+
+// v1: deprecated, still works.
+app.use('/api/v1', deprecateV1, buildApiRouter());
+
+// Salama integration is not versioned.
 app.use('/api/salama', salamaRoutes);
+
+// Legacy unversioned paths (/api/listings) behave as v1 and are deprecated.
+app.use('/api', (req, res, next) => {
+  if (/^\/(salama|test-db)(?=\/|$)/.test(req.path)) return next();
+  return deprecateV1(req, res, next);
+}, buildApiRouter());
 
 // Test Database Connection Route
 app.get('/api/test-db', async (req, res) => {
