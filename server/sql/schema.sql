@@ -134,7 +134,20 @@ CREATE TABLE IF NOT EXISTS contact_messages (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------
--- 8. farmer_ratings — buyer reviews left after a delivered order
+-- 8. economic_exploitation_reports — anonymous, confidential reports
+-- ---------------------------------------------------------------------
+CREATE TABLE IF NOT EXISTS economic_exploitation_reports (
+  id              INT AUTO_INCREMENT PRIMARY KEY,
+  incident_date   DATE              NOT NULL,
+  county          VARCHAR(100)      NOT NULL,
+  location        VARCHAR(255)      NULL,
+  description     TEXT              NOT NULL,
+  is_anonymous    TINYINT(1)        NOT NULL DEFAULT 1,
+  created_at      TIMESTAMP         NOT NULL DEFAULT CURRENT_TIMESTAMP
+) ENGINE=InnoDB;
+
+-- ---------------------------------------------------------------------
+-- 9. farmer_ratings — buyer reviews left after a delivered order
 --    (used to compute the "Farmer Rating" metric on the dashboard)
 -- ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS farmer_ratings (
@@ -152,7 +165,7 @@ CREATE TABLE IF NOT EXISTS farmer_ratings (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------
--- 9. headquarters — company/buyer hubs (referenced by API_NEEDS.md /
+-- 10. headquarters — company/buyer hubs (referenced by API_NEEDS.md /
 --    ENDPOINTS_LIST.md for the SettleIn downstream integration)
 -- ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS headquarters (
@@ -166,7 +179,7 @@ CREATE TABLE IF NOT EXISTS headquarters (
 ) ENGINE=InnoDB;
 
 -- ---------------------------------------------------------------------
--- 10. market_prices — scheduled/cached commodity price feed
+-- 11. market_prices — scheduled/cached commodity price feed
 -- ---------------------------------------------------------------------
 CREATE TABLE IF NOT EXISTS market_prices (
   id              INT AUTO_INCREMENT PRIMARY KEY,

@@ -6,6 +6,11 @@ require('dotenv').config();
 const db = require('./db');
 const { deprecateV1, v2Envelope } = require('./versioning');
 
+const {
+  monitor,
+  statsHandler
+} = require('./middleware/monitoring');
+
 const app = express();
 const rateLimitBuckets = new Map();
 const RATE_LIMIT_WINDOW_MS = 60 * 1000;
@@ -72,7 +77,8 @@ app.use('/api', (req, res, next) => {
 
   bucket.count += 1;
   rateLimitBuckets.set(matchedKey.consumer, bucket);
-  next();
+  req.apiConsumer = matchedKey.consumer;
+  monitor(req, res, next);
 });
 
 // Health Check Route
@@ -91,6 +97,7 @@ const headquartersRoutes = require('./routes/headquarters');
 const marketPriceRoutes = require('./routes/marketPrices');
 const farmerRoutes = require('./routes/farmers');
 const salamaRoutes = require('./routes/salama');
+const reportRoutes = require('./routes/reports');
 
 // The same handlers serve every API version; versions differ only in
 // middleware (headers for v1, response envelope for v2).
@@ -119,6 +126,7 @@ app.use('/api/v1', deprecateV1, buildApiRouter());
 
 // Salama integration is not versioned.
 app.use('/api/salama', salamaRoutes);
+app.use('/api/reports', reportRoutes);
 
 // Legacy unversioned paths (/api/listings) behave as v1 and are deprecated.
 app.use('/api', (req, res, next) => {
@@ -136,6 +144,8 @@ app.get('/api/test-db', async (req, res) => {
     res.status(500).json({ error: 'Database connection failed' });
   }
 });
+
+app.get('/api/stats', statsHandler);
 
 // Unknown route
 app.use((req, res) => {

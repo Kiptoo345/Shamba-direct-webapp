@@ -9,6 +9,98 @@ import '../styles/shared.css';
 import '../styles/dashboard.css';
 
 const EMPTY_LISTING = { name: '', category: '', pricePerKg: '', quantityKg: '', county: '', harvestNote: '' };
+const ORDER_TRACKING_STEPS = [
+  { status: 'pending', label: 'Order placed' },
+  { status: 'confirmed', label: 'Order accepted' },
+  { status: 'delivered', label: 'Delivery complete' }
+];
+
+function OrderTracking({ orders, loading }) {
+  const [showAllOrders, setShowAllOrders] = useState(false);
+
+  return (
+    <section
+      className="dash-table-card dash-order-tracking"
+      aria-labelledby="order-tracking-heading"
+    >
+      <div className="dash-table-title">
+        <h3 id="order-tracking-heading">Order tracking</h3>
+      </div>
+
+      {loading && <p>Loading your orders…</p>}
+      {!loading && orders.length === 0 && (
+        <p>No orders to track yet.</p>
+      )}
+
+      {!loading && orders.length > 0 && (
+        <div className="dash-order-list">
+          {orders.slice(0, showAllOrders ? orders.length : 1).map((order) => {
+            const progress = ORDER_TRACKING_STEPS.findIndex(
+              (step) => step.status === order.status
+            );
+            const isCancelled = order.status === 'cancelled';
+
+            return (
+              <article className="dash-order-card" key={order.id}>
+                <div className="dash-order-header">
+                  <div>
+                    <span className="dash-order-number">
+                      ORDER #{String(order.id).padStart(4, '0')}
+                    </span>
+                    <h4>{order.product_name}</h4>
+                  </div>
+                  <span className={`status-pill status-${order.status}`}>
+                    {order.status}
+                  </span>
+                </div>
+
+                <div className="dash-order-details">
+                  <span>
+                    Quantity: {Number(order.quantity_kg).toLocaleString()} kg
+                  </span>
+                  <span>
+                    Total: KES {Number(order.total_price).toLocaleString()}
+                  </span>
+                </div>
+
+                {isCancelled ? (
+                  <p className="dash-order-cancelled">
+                    This order has been cancelled.
+                  </p>
+                ) : (
+                  <ol className="dash-order-progress">
+                    {ORDER_TRACKING_STEPS.map((step, index) => (
+                      <li
+                        key={step.status}
+                        className={index <= progress ? 'completed' : ''}
+                      >
+                        <span className="dash-order-step-number">
+                          {index < progress ? '✓' : index + 1}
+                        </span>
+                        <span>{step.label}</span>
+                      </li>
+                    ))}
+                  </ol>
+                )}
+              </article>
+            );
+          })}
+        </div>
+      )}
+
+      {orders.length > 1 && !loading && (
+        <button
+          type="button"
+          className="dash-order-toggle"
+          aria-expanded={showAllOrders}
+          onClick={() => setShowAllOrders((isShowingAll) => !isShowingAll)}
+        >
+          {showAllOrders ? 'Show fewer orders' : 'Show all orders'}
+        </button>
+      )}
+    </section>
+  );
+}
 
 function LoginForm({ onLoggedIn }) {
   const [form, setForm] = useState({ phoneNumber: '', password: '' });
@@ -170,8 +262,24 @@ function FarmerDashboard({ user, onLogout }) {
       <aside className="dash-sidebar">
         <div className="dash-user">
           <div className="dash-avatar">{initials}</div>
-          <div className="dash-user-name">{user.full_name}</div>
-          <div className="dash-user-role">🌾 {user.is_verified ? 'Verified Farmer' : 'Farmer'}</div>
+          <div className="dash-user-name">
+            {user.full_name}
+            {user.role === 'farmer' && (
+              <span
+                className={`dash-verification-dot ${
+                  user.is_verified ? 'verified' : 'unverified'
+                }`}
+                role="img"
+                aria-label={
+                  user.is_verified ? 'Verified account' : 'Unverified account'
+                }
+                title={
+                  user.is_verified ? 'Verified account' : 'Unverified account'
+                }
+              />
+            )}
+          </div>
+          <div className="dash-user-role">🌾 Farmer</div>
         </div>
         <a className="dash-nav-item active" href="#overview">📊 <span>Overview</span></a>
         <a className="dash-nav-item" href="#listings">📋 <span>My Listings</span></a>
@@ -219,6 +327,8 @@ function FarmerDashboard({ user, onLogout }) {
             <div className="metric-sub">Based on {rating.reviewCount || 0} reviews</div>
           </div>
         </div>
+
+        <OrderTracking orders={orders} loading={loading} />
 
         {/* Active Listings Table */}
         <div className="dash-table-card" id="listings">
@@ -299,9 +409,6 @@ function FarmerDashboard({ user, onLogout }) {
         <div className="dash-table-card" id="orders">
           <div className="dash-table-title">
             <span>Recent Orders</span>
-            <span style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--text-muted)' }}>
-              Updates as soon as a buyer places an order
-            </span>
           </div>
           <table className="dash-table">
             <thead>
@@ -532,6 +639,8 @@ function BuyerDashboard({ user, onLogout }) {
             <div className="metric-sub">Awaiting delivery</div>
           </div>
         </div>
+
+        <OrderTracking orders={orders} loading={loading} />
 
         {/* Orders Table */}
         <div className="dash-table-card" id="orders">

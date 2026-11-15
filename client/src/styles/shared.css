@@ -184,7 +184,26 @@ nav {
   font-size: 0.95rem;
   height: 26px;
   justify-content: center;
+  position: relative;
   width: 26px;
+}
+
+.nav-verification-dot {
+  border: 2px solid #fff;
+  border-radius: 50%;
+  height: 9px;
+  position: absolute;
+  right: -3px;
+  top: -3px;
+  width: 9px;
+}
+
+.nav-verification-dot.verified {
+  background: #299c59;
+}
+
+.nav-verification-dot.unverified {
+  background: #B7700D;
 }
 
 .nav-role-badge-text {

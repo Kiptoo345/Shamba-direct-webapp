@@ -3,7 +3,9 @@
 /* Hero Section */
 .hero {
   align-items: center;
-  background: linear-gradient(135deg, #1B5228 0%, #2A7A3B 40%, #3A9B4E 100%);
+  background:
+    linear-gradient(rgba(15, 45, 24, 0.58), rgba(15, 45, 24, 0.58)),
+    url('../../public/images/frontcoverpage.jpg') center / cover no-repeat;
   display: flex;
   min-height: 92vh;
   overflow: hidden;

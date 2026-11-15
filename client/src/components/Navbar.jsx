@@ -6,7 +6,7 @@ const NAV_ITEMS = [
   { to: '/marketplace', label: 'Marketplace' },
   { to: '/how-it-works', label: 'How It Works' },
   { to: '/contact', label: 'About & Contact' },
-  { to: '/safety-support', label: 'Safety & Support' }
+  { to: '/farmers-protection', label: 'Farmers Protection' }
 ];
 
 function Navbar() {
@@ -59,7 +59,27 @@ function Navbar() {
                 className={`nav-role-badge nav-role-badge--${user.role}`}
                 title={`Signed in as ${roleLabel}`}
               >
-                <span className="nav-role-badge-icon">{roleEmoji}</span>
+                <span className="nav-role-badge-icon">
+                  {roleEmoji}
+                  {user.role === 'farmer' && (
+                    <span
+                      className={`nav-verification-dot ${
+                        user.is_verified ? 'verified' : 'unverified'
+                      }`}
+                      role="img"
+                      aria-label={
+                        user.is_verified
+                          ? 'Verified account'
+                          : 'Unverified account'
+                      }
+                      title={
+                        user.is_verified
+                          ? 'Verified account'
+                          : 'Unverified account'
+                      }
+                    />
+                  )}
+                </span>
                 <span className="nav-role-badge-text">
                   <span className="nav-role-badge-name">{displayName}</span>
                   <span className="nav-role-badge-role">{roleLabel}</span>

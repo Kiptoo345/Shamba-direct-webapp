@@ -70,6 +70,17 @@ Get-Content .\server\sql\schema.sql | mysql -u root -p --default-character-set=u
 ```
 
 This creates the `shamba_direct_db` database, all tables and seed data.
+For an existing database, apply the report-table migration:
+
+```bash
+mysql -u root -p shamba_direct_db < server/sql/migrations/001_economic_exploitation_reports.sql
+```
+
+In PowerShell:
+
+```powershell
+Get-Content .\server\sql\migrations\001_economic_exploitation_reports.sql | mysql -u root -p shamba_direct_db
+```
 
 ### 3. Configure the server
 
@@ -462,6 +473,9 @@ Shamba-direct-webapp/
 | Delete an order                            | `DELETE /api/orders/:id`           | DELETE `orders` |
 | "Contact Farmer" (Marketplace)              | `POST /api/enquiries`              | INSERT `enquiries` |
 | Contact / About page form                  | `POST /api/contact`                | INSERT `contact_messages` |
+| Report economic exploitation                 | `POST /api/reports/economic-exploitation` | INSERT `economic_exploitation_reports` |
+| Report marketplace concerns                  | `POST /api/salama/consumer-reports` | INSERT `consumer_protection_reports` |
+| Find support services                       | `GET /api/salama/resources`         | GET services from Salama |
 | Headquarters CRUD (admin/back office)       | `/api/headquarters`                | INSERT/UPDATE/DELETE `headquarters` |
 | Market price feed CRUD (admin/pipeline)     | `/api/market-prices`               | INSERT/UPDATE/DELETE `market_prices` |
 

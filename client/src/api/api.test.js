@@ -1,4 +1,7 @@
-import { createEnquiry, getProducts } from './api';
+import {
+  createEnquiry,
+  getProducts
+} from './api';
 
 describe('API client', () => {
   beforeEach(() => {

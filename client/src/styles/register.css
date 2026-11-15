@@ -58,33 +58,6 @@
   display: none;
 }
 
-/* Benefits Section */
-.benefits-list {
-  background: var(--green-light);
-  border-radius: var(--radius);
-  margin-bottom: 2rem;
-  padding: 1.5rem;
-}
-
-.benefit-item {
-  align-items: flex-start;
-  display: flex;
-  font-size: 0.9rem;
-  gap: 0.75rem;
-  margin-bottom: 0.75rem;
-}
-
-.benefit-item:last-child {
-  margin-bottom: 0;
-}
-
-.benefit-check {
-  color: var(--green);
-  flex-shrink: 0;
-  font-size: 1.1rem;
-  margin-top: 1px;
-}
-
 /* Prominent "already have an account" callout shown at the top of the
    register page so returning users immediately see how to log in
    instead of creating a duplicate account. */

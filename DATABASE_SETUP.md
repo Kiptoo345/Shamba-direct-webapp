@@ -48,7 +48,7 @@ ask the person who installed MySQL for the host, port, username, and password.
 
 ## 2. Create the schema from the project file
 
-The schema file creates a database named `shamba_direct_db`, its ten tables,
+The schema file creates a database named `shamba_direct_db`, its twelve tables,
 relationships, and optional starter data.
 
 ### Option A: MySQL command line (recommended)
@@ -107,6 +107,7 @@ You should see these tables:
 company_profiles     headquarters       market_prices
 contact_messages     orders             products
 enquiries            farmer_profiles    farmer_ratings
+economic_exploitation_reports
 users
 ```
 

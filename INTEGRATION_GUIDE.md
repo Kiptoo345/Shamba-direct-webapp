@@ -6,26 +6,30 @@ This integration connects Shamba Direct to Salama.
 
 The integration provides:
 
-1. A support services directory.
+1. A support services directory fetched from Salama with GET requests.
 2. County-based support service filtering.
-3. Economic-abuse incident reporting.
+3. Anonymous economic-exploitation report storage in Shamba Direct's database.
 
 This integration does not replace Shamba Direct's crop marketplace,
 crop listings, farmer accounts, or external crop-price API.
 
 ---
 
-## 2. Salama APIs
+## 2. Salama services API
 
-### A. Support resources
+### Support resources
 
-Endpoint:
+Salama endpoint:
 
 GET /api/resources
 
 Example:
 
 GET /api/resources?county=nairobi&type=legal
+
+Shamba Direct exposes this through:
+
+GET /api/salama/resources?county=nairobi&type=legal
 
 Available types:
 
@@ -40,28 +44,21 @@ Purpose:
 Retrieve support organisations and display them inside
 Shamba Direct.
 
-### B. Economic-abuse incident reporting
+Shamba Direct retrieves the directory from Salama using GET.
+Salama is not used to store incident reports.
 
-Endpoint:
+## 3. Protection reporting
 
-POST /api/incidents
+The Farmers Protection page keeps separate reporting forms for
+economic exploitation and other marketplace concerns:
 
-The integration sends:
+- `POST /api/reports/economic-exploitation` stores anonymous
+  economic exploitation reports in
+  `economic_exploitation_reports`.
+- `POST /api/salama/consumer-reports` stores anonymous marketplace
+  concern reports in `consumer_protection_reports`.
 
-{
-  "incident_type": "economic",
-  "incident_date": "2026-11-03",
-  "county": "nairobi",
-  "location": "Optional general area",
-  "description": "Description of the incident.",
-  "is_anonymous": true
-}
-
-Purpose:
-
-Allow a user to submit an economic-abuse report to Salama.
-
-### C. Volunteer API
+### Salama volunteer API
 
 Endpoint:
 
@@ -77,31 +74,20 @@ endpoint before Shamba Direct consumes this information.
 
 ---
 
-## 3. Backend installation
+## 4. Database setup
 
-Copy these files into Shamba Direct:
+New database installations include the report table in
+`server/sql/schema.sql`.
 
-server/services/salamaClient.js
+For existing databases, apply the migrations:
 
-server/routes/salama.js
-
-Open:
-
-server/app.js
-
-Import the route:
-
-const salamaRoutes = require('./routes/salama');
-
-Mount the route before the unknown-route handler:
-
-app.use('/api/salama', salamaRoutes);
-
-Keep Shamba Direct's existing authentication middleware.
+```bash
+mysql -u root -p shamba_direct_db < server/sql/migrations/001_economic_exploitation_reports.sql
+```
 
 ---
 
-## 4. Environment configuration
+## 5. Environment configuration
 
 Open:
 
@@ -132,42 +118,27 @@ API_KEY_TEAM and SALAMA_API_KEY are different credentials.
 API_KEY_TEAM authenticates requests to Shamba Direct.
 
 SALAMA_API_KEY authenticates requests from Shamba Direct
-to Salama.
+to Salama, if required by the support-resources endpoint.
 
 Never expose SALAMA_API_KEY in React source code.
+Incident reports are stored locally and do not require a
+Salama incident-write API key.
 
 ---
 
-## 5. Frontend installation
+## 6. Frontend
 
-Copy these files:
+The support directory uses `client/src/api/salama.js` and
+retrieves resources from `GET /api/salama/resources`.
 
-client/src/api/salama.js
-
-client/src/pages/SafetySupport.jsx
-
-client/src/styles/safety-support.css
-
-Open:
-
-client/src/App.js
-
-Import:
-
-import SafetySupport from './pages/SafetySupport';
-
-Inside Routes, add:
-
-<Route
-  path="/safety-support"
-  element={<SafetySupport />}
-/>
-
-Add a navigation link to /safety-support if required.
+The Farmers Protection page uses `submitEconomicAbuseReport` from
+`client/src/api/api.js` for economic exploitation reports and
+`submitConsumerProtectionReport` from `client/src/api/salama.js` for
+other marketplace concerns.
 
 ---
 
-## 6. Testing
+## 7. Testing
 
 First start Salama's backend.
 
@@ -179,7 +150,7 @@ Then start Shamba Direct.
 
 Open:
 
-http://localhost:3000/safety-support
+http://localhost:3000/farmers-protection
 
 Test the following:
 
@@ -192,26 +163,24 @@ Test the following:
 7. Confirm that Shamba Direct displays an error instead of crashing.
 8. Restart Salama and test again.
 
-Do not submit real incident reports until the Salama
-team confirms that API-key authentication is implemented
-and the incident endpoint is approved for partner writes.
+Reports submitted during testing are written to the configured
+Shamba Direct database. Use synthetic details and remove test
+reports according to the project's data-retention policy.
 
 ---
 
-## 7. Questions for the Salama team
+## 8. Questions for the Salama team
 
 1. What is the reachable API base URL?
 2. What API-key header should Shamba Direct use?
 3. What is the API key issued to Shamba Direct?
-4. Has API-key authentication been implemented on
-   POST /api/incidents?
-5. Can Salama provide a privacy-safe service-provider
+4. Can Salama provide a privacy-safe service-provider
    endpoint filtered by availability?
-6. What is the incident-report retention and follow-up policy?
+5. What service-data update and availability guarantees apply?
 
 ---
 
-## 8. Security
+## 9. Security
 
 - Keep API keys in environment variables.
 - Never commit .env.
@@ -219,26 +188,16 @@ and the incident endpoint is approved for partner writes.
 - Do not log API keys.
 - Do not log incident descriptions.
 - Do not collect unnecessary personal information.
-- Explain to users that Salama is an external service.
-- Confirm privacy and consent requirements before
-  enabling incident reporting in production.
+- Explain to users that the support directory comes from an external service.
+- Restrict database access to confidential reports and define
+  a report-retention policy before production use.
 
 ---
 
-## 9. Important integration limitations
+## 10. Important integration limitations
 
-The current Salama API needs further verification.
-
-Its API needs document specifies API-key protection
-for incident reporting.
-
-However, the inspected implementation does not currently
-enforce that authentication.
-
-The integration sends the configured key, but Salama
-must also validate it.
-
-The current resources endpoint supports county and type
-filters, but not a structured availability filter.
+The support-resources endpoint supports county and type
+filters, but not a structured availability filter. Protection
+reports are stored locally and are not submitted to Salama.
 
 Confirm these points with the Salama team before deployment.

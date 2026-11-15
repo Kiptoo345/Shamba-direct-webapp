@@ -8,7 +8,7 @@ import Register from './pages/Register';
 import Contact from './pages/Contact';
 import HowItWorks from './pages/HowItWorks';
 import { AuthProvider } from './context/AuthContext';
-import SafetySupport from './pages/SafetySupport';
+import FarmersProtection from './pages/FarmersProtection';
 
 function App() {
   return (
@@ -23,7 +23,7 @@ function App() {
             <Route path="/register" element={<Register />} />
             <Route path="/contact" element={<Contact />} />
             <Route path="/how-it-works" element={<HowItWorks />} />
-            <Route path="/safety-support" element={<SafetySupport />} />
+            <Route path="/farmers-protection" element={<FarmersProtection />} />
             <Route path="*" element={<Home />} />
           </Routes>
           <Footer />

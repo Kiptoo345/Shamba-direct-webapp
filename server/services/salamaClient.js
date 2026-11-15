@@ -27,37 +27,16 @@ function getConfig() {
   };
 }
 
-async function salamaRequest(
-  path,
-  {
-    method = 'GET',
-    body,
-    requireKey = false
-  } = {}
-) {
+async function salamaRequest(path) {
   const {
     baseUrl,
     apiKey,
     apiKeyHeader
   } = getConfig();
 
-  // Do not allow incident submissions without a configured key.
-  if (requireKey && !apiKey) {
-    const error = new Error(
-      'Economic-abuse reporting is unavailable until SALAMA_API_KEY is configured.'
-    );
-
-    error.status = 503;
-    throw error;
-  }
-
   const headers = {
     Accept: 'application/json'
   };
-
-  if (body !== undefined) {
-    headers['Content-Type'] = 'application/json';
-  }
 
   if (apiKey) {
     headers[apiKeyHeader] = apiKey;
@@ -75,11 +54,7 @@ async function salamaRequest(
 
   try {
     const response = await fetch(`${baseUrl}${path}`, {
-      method,
       headers,
-      body: body === undefined
-        ? undefined
-        : JSON.stringify(body),
       signal: controller.signal
     });
 
