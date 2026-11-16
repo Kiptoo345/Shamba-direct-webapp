@@ -223,3 +223,104 @@ ON DUPLICATE KEY UPDATE price_per_kg = VALUES(price_per_kg);
 INSERT INTO headquarters (region_name, county, address) VALUES
   ('Shamba Direct HQ', 'Nairobi', '2nd Floor, Ngong Road Plaza, Ngong Road, Nairobi')
 ON DUPLICATE KEY UPDATE address = VALUES(address);
+
+
+USE shamba_direct_db;
+
+-- =========================================================
+-- 1. SALAMA RESOURCES
+-- Stores resources synchronized from the Salama API.
+-- =========================================================
+
+CREATE TABLE IF NOT EXISTS salama_resources (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    salama_resource_id VARCHAR(64) NOT NULL UNIQUE,
+
+    name VARCHAR(255) NOT NULL,
+
+    type ENUM(
+        'hotline',
+        'shelter',
+        'legal',
+        'medical',
+        'mental-health'
+    ) NOT NULL,
+
+    county VARCHAR(100) NOT NULL,
+
+    description TEXT NOT NULL,
+
+    contact VARCHAR(100) NOT NULL,
+
+    available VARCHAR(255) NOT NULL,
+
+    source_created_at DATETIME NULL,
+
+    last_synced_at TIMESTAMP NOT NULL
+        DEFAULT CURRENT_TIMESTAMP,
+
+    is_active TINYINT(1) NOT NULL DEFAULT 1,
+
+    created_at TIMESTAMP NOT NULL
+        DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP NOT NULL
+        DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    INDEX idx_salama_county (county),
+    INDEX idx_salama_type (type),
+    INDEX idx_salama_active (is_active),
+    INDEX idx_salama_synced (last_synced_at)
+
+) ENGINE=InnoDB;
+
+
+-- =========================================================
+-- 2. CONSUMER PROTECTION REPORTS
+-- Stores reports submitted by Shamba Direct consumers.
+-- Reports can be anonymous.
+-- =========================================================
+
+CREATE TABLE IF NOT EXISTS consumer_protection_reports (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+
+    case_ref VARCHAR(40) UNIQUE NULL,
+
+    category ENUM(
+        'misleading_listing',
+        'payment_dispute',
+        'produce_quality',
+        'delivery_issue',
+        'harassment',
+        'other'
+    ) NOT NULL,
+
+    county VARCHAR(100) NOT NULL,
+
+    order_reference VARCHAR(50) NULL,
+
+    description TEXT NOT NULL,
+
+    is_anonymous TINYINT(1) NOT NULL DEFAULT 1,
+
+    status ENUM(
+        'received',
+        'reviewing',
+        'resolved'
+    ) NOT NULL DEFAULT 'received',
+
+    created_at TIMESTAMP NOT NULL
+        DEFAULT CURRENT_TIMESTAMP,
+
+    updated_at TIMESTAMP NOT NULL
+        DEFAULT CURRENT_TIMESTAMP
+        ON UPDATE CURRENT_TIMESTAMP,
+
+    INDEX idx_consumer_report_category (category),
+    INDEX idx_consumer_report_status (status),
+    INDEX idx_consumer_report_county (county),
+    INDEX idx_consumer_report_date (created_at)
+
+) ENGINE=InnoDB;
