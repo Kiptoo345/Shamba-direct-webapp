@@ -4,6 +4,7 @@ const { timingSafeEqual } = require('node:crypto');
 require('dotenv').config();
 
 const db = require('./db');
+const logger = require('./logger');
 const { deprecateV1, v2Envelope } = require('./versioning');
 
 const {
