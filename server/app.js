@@ -7,8 +7,8 @@ const db = require('./db');
 const { deprecateV1, v2Envelope } = require('./versioning');
 
 const {
-  monitor,
-  statsHandler
+	monitor,
+	statsHandler
 } = require('./middleware/monitoring');
 
 const app = express();
@@ -75,16 +75,10 @@ app.use('/api', (req, res, next) => {
 		return res.status(429).json({ error: 'Rate limit exceeded', retryAfter });
 	}
 
-<<<<<<< HEAD
 	bucket.count += 1;
 	rateLimitBuckets.set(matchedKey.consumer, bucket);
-	next();
-=======
-  bucket.count += 1;
-  rateLimitBuckets.set(matchedKey.consumer, bucket);
-  req.apiConsumer = matchedKey.consumer;
-  monitor(req, res, next);
->>>>>>> 6aa24fc5504eb0803b2cc34f24f1ce5bb6fabd80
+	req.apiConsumer = matchedKey.consumer;
+	monitor(req, res, next);
 });
 
 // Health Check Route
