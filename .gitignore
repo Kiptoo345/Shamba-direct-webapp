@@ -8,6 +8,7 @@ linuxrun.sh
 build/
 dist/
 coverage/
+RETROSPECTIVE.md
 npm-debug.log*
 yarn-debug.log*
 yarn-error.log*

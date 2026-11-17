@@ -69,19 +69,13 @@ function Register() {
     <div className="reg-page">
       <div className="reg-container">
         <div className="reg-header">
-          <div className="section-label">Join for Free</div>
+          <div className="section-label">Get Started</div>
           <h2 className="section-title">Create Your Account</h2>
-          <p style={{ color: 'var(--text-muted)' }}>No fees. No subscriptions. We only earn when you do — 3% platform fee per sale.</p>
+          <p style={{ color: 'var(--text-muted)' }}>Choose the account type that fits you and complete the form. See the FAQs for details about listings, orders, payments, and delivery.</p>
+          <p style={{ marginTop: '0.75rem' }}><Link to="/how-it-works#faqs" style={{ color: 'var(--green)', fontWeight: 700 }}>Read how it works →</Link></p>
           <p className="reg-signin-callout">
             Already have an account? <Link to="/dashboard">Log in here →</Link>
           </p>
-        </div>
-
-        <div className="benefits-list">
-          <div className="benefit-item"><span className="benefit-check">✅</span> <span>Free to register — no monthly charges</span></div>
-          <div className="benefit-item"><span className="benefit-check">✅</span> <span>Get paid directly via M-Pesa</span></div>
-          <div className="benefit-item"><span className="benefit-check">✅</span> <span>Access buyers from all 47 counties</span></div>
-          <div className="benefit-item"><span className="benefit-check">✅</span> <span>Works on any smartphone or feature phone</span></div>
         </div>
 
         <div className="reg-tabs">
@@ -99,7 +93,7 @@ function Register() {
               <input type="text" className="form-input" placeholder="e.g. James Mwangi" value={farmer.fullName} onChange={updateFarmer('fullName')} required />
             </div>
             <div className="form-group">
-              <label className="form-label">Phone Number (M-Pesa) *</label>
+              <label className="form-label">Phone Number *</label>
               <input type="tel" className="form-input" placeholder="0712 345 678" value={farmer.phoneNumber} onChange={updateFarmer('phoneNumber')} required />
             </div>
           </div>

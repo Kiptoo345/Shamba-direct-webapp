@@ -63,15 +63,19 @@ describe('API key access and rate limiting', () => {
   test('limits the ring-partner key to read-only partner endpoints', async () => {
     process.env.API_KEY_RING_PARTNER = 'ring-partner-test-key';
 
-    const readResponse = await request(app)
-      .get('/api/listings')
-      .set('X-API-Key', process.env.API_KEY_RING_PARTNER);
+    const readResponses = await Promise.all(
+      ['/api/listings', '/api/v1/listings', '/api/v2/listings'].map((path) =>
+        request(app)
+          .get(path)
+          .set('X-API-Key', process.env.API_KEY_RING_PARTNER)
+      )
+    );
     const writeResponse = await request(app)
       .post('/api/products')
       .set('X-API-Key', process.env.API_KEY_RING_PARTNER)
       .send({ name: 'Blocked listing' });
 
-    expect(readResponse.status).toBe(200);
+    expect(readResponses.map((response) => response.status)).toEqual([200, 200, 200]);
     expect(writeResponse.status).toBe(403);
     expect(writeResponse.body).toEqual({
       error: 'This API key is read-only and limited to partner data'

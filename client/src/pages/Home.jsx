@@ -1,9 +1,40 @@
+import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { getMarketPrices } from '../api/api';
 import CropImage from '../components/CropImage';
 import '../styles/shared.css';
 import '../styles/home.css';
 
 function Home() {
+  const [marketPrices, setMarketPrices] = useState([]);
+  const [marketPricesLoading, setMarketPricesLoading] = useState(true);
+  const [marketPricesError, setMarketPricesError] = useState('');
+
+  useEffect(() => {
+    let active = true;
+
+    getMarketPrices()
+      .then((prices) => {
+        if (active) {
+          setMarketPrices(prices);
+        }
+      })
+      .catch((error) => {
+        if (active) {
+          setMarketPricesError(error.message);
+        }
+      })
+      .finally(() => {
+        if (active) {
+          setMarketPricesLoading(false);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
   return (
     <>
       {/* HERO */}
@@ -142,81 +173,42 @@ function Home() {
         </div>
       </section>
 
-      {/* FEATURED PRODUCE */}
+      {/* MARKET PRICES */}
       <section className="section" style={{ background: 'var(--cream)' }}>
         <div className="container">
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end', marginBottom: '0.5rem' }}>
             <div>
-              <div className="section-label">Live Listings</div>
-              <h2 className="section-title">Fresh From Kenyan Farms</h2>
+              <div className="section-label">Market Prices</div>
+              <h2 className="section-title">Products &amp; Their Market Prices</h2>
             </div>
-            <Link className="btn-secondary" to="/marketplace">View All →</Link>
+            <Link className="btn-secondary" to="/marketplace">Browse Marketplace →</Link>
           </div>
           <div className="produce-grid">
-            <div className="produce-card">
-              <div className="produce-img">
-                <CropImage name="Roma Tomatoes" />
-                <span className="produce-badge">✅ Verified</span>
-              </div>
-              <div className="produce-body">
-                <div className="produce-name">Roma Tomatoes</div>
-                <div className="produce-farmer">👤 James Mwangi — Verified Farmer</div>
-                <div className="produce-meta">
-                  <span className="produce-price">KES 45/kg</span>
-                  <span className="produce-qty">800 kg available</span>
+            {marketPricesLoading && (
+              <p role="status">Loading market prices…</p>
+            )}
+            {marketPricesError && (
+              <p role="alert">Couldn't load market prices: {marketPricesError}</p>
+            )}
+            {!marketPricesLoading && !marketPricesError && marketPrices.length === 0 && (
+              <p>No market prices are available right now.</p>
+            )}
+            {!marketPricesLoading && !marketPricesError && marketPrices.map((price) => (
+              <div className="produce-card" key={`${price.crop_name}-${price.county}`}>
+                <div className="produce-img">
+                  <CropImage name={price.crop_name} />
                 </div>
-                <div className="produce-county">📍 Kirinyaga County • Harvested 2 days ago</div>
-                <Link className="produce-btn" to="/marketplace" style={{ display: 'block', textAlign: 'center', marginTop: '1rem' }}>Contact Farmer</Link>
-              </div>
-            </div>
-            <div className="produce-card">
-              <div className="produce-img">
-                <CropImage name="Grade A Maize" />
-                <span className="produce-badge">Bulk Available</span>
-              </div>
-              <div className="produce-body">
-                <div className="produce-name">Grade A Maize</div>
-                <div className="produce-farmer">👤 Grace Achieng — Verified Farmer</div>
-                <div className="produce-meta">
-                  <span className="produce-price">KES 32/kg</span>
-                  <span className="produce-qty">3,500 kg available</span>
+                <div className="produce-body">
+                  <div className="produce-name">{price.crop_name}</div>
+                  <div className="produce-meta">
+                    <span className="produce-price">
+                      KES {Number(price.price_per_kg).toLocaleString()}/kg
+                    </span>
+                  </div>
+                  <div className="produce-county">📍 {price.county || 'Kenya'}</div>
                 </div>
-                <div className="produce-county">📍 Uasin Gishu County • Post-harvest dry</div>
-                <Link className="produce-btn" to="/marketplace" style={{ display: 'block', textAlign: 'center', marginTop: '1rem' }}>Contact Farmer</Link>
               </div>
-            </div>
-            <div className="produce-card">
-              <div className="produce-img">
-                <CropImage name="Shangi Potatoes" />
-                <span className="produce-badge">Best Price</span>
-              </div>
-              <div className="produce-body">
-                <div className="produce-name">Shangi Potatoes</div>
-                <div className="produce-farmer">👤 Peter Kamau — Verified Farmer</div>
-                <div className="produce-meta">
-                  <span className="produce-price">KES 28/kg</span>
-                  <span className="produce-qty">1,200 kg available</span>
-                </div>
-                <div className="produce-county">📍 Nyandarua County • Washed &amp; sorted</div>
-                <Link className="produce-btn" to="/marketplace" style={{ display: 'block', textAlign: 'center', marginTop: '1rem' }}>Contact Farmer</Link>
-              </div>
-            </div>
-            <div className="produce-card">
-              <div className="produce-img">
-                <CropImage name="Red Onions" />
-                <span className="produce-badge">High Demand</span>
-              </div>
-              <div className="produce-body">
-                <div className="produce-name">Red Onions</div>
-                <div className="produce-farmer">👤 Fatuma Hassan — Verified Farmer</div>
-                <div className="produce-meta">
-                  <span className="produce-price">KES 60/kg</span>
-                  <span className="produce-qty">600 kg available</span>
-                </div>
-                <div className="produce-county">📍 Kajiado County • Dry-cured</div>
-                <Link className="produce-btn" to="/marketplace" style={{ display: 'block', textAlign: 'center', marginTop: '1rem' }}>Contact Farmer</Link>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>

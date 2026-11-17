@@ -1,0 +1,72 @@
+{
+  "planHash": "72af0a5573bb3b4938788d2cd50323b69f030ee3f20b73a6f561aa46d12e7abb",
+  "phase": "standalone",
+  "recordedAtUtc": "2026-11-10T08:41:28.1446206Z",
+  "retryCount": 2,
+  "resetBaseline": false,
+  "complete": true,
+  "result": {
+    "setupSucceeded": true,
+    "setupDurationMs": 0,
+    "setupFailureOutput": null,
+    "assertions": [
+      {
+        "name": "server-health-200",
+        "kind": "http-probe",
+        "verificationMethod": "http-status",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": null,
+        "outputSample": "HTTP 200\nShamba Direct API is running...",
+        "durationMs": 39
+      },
+      {
+        "name": "tests-pass",
+        "kind": "process",
+        "verificationMethod": "test-results",
+        "passed": true,
+        "timedOut": false,
+        "skipped": false,
+        "skippedReason": null,
+        "exitCode": 0,
+        "outputSample": "\r\n\u003E server@1.0.0 test\r\n\u003E jest --runInBand --forceExit\r\n\r\n\r\nTest Suites: 14 passed, 14 total\r\nTests:       113 passed, 113 total\r\nSnapshots:   0 total\r\nTime:        3.674 s, estimated 4 s\r\nRan all test suites.\r\nForce exiting Jest: Have you considered using \u0060--detectOpenHandles\u0060 to detect async operations that kept running after all tests finished?\r\n",
+        "durationMs": 4477,
+        "testResults": {
+          "testFramework": "jest",
+          "runnerDetectedFrom": "package_json",
+          "testsTotal": 113,
+          "testsPassed": 113,
+          "testsFailed": 0,
+          "testsSkipped": 0,
+          "parseFailed": false
+        }
+      }
+    ],
+    "executions": [
+      {
+        "source": "server-health-200",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npm.CMD",
+        "args": [
+          "start"
+        ],
+        "cwd": "C:\\Users\\kiman\\OneDrive\\Desktop\\Shamba-direct-webapp\\server",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      },
+      {
+        "source": "tests-pass",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npm.CMD",
+        "args": [
+          "test"
+        ],
+        "cwd": "C:\\Users\\kiman\\OneDrive\\Desktop\\Shamba-direct-webapp\\server",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      }
+    ]
+  }
+}

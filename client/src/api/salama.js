@@ -1,26 +1,19 @@
+
 const BASE_URL =
   process.env.REACT_APP_API_URL || '/api';
 
-
-async function salamaLocalRequest(
-  path,
-  {
-    method = 'GET',
-    body
-  } = {}
-) {
+async function salamaLocalRequest(path, options = {}) {
   const response = await fetch(
     `${BASE_URL}/salama${path}`,
     {
-      method,
-
+      method: options.method || 'GET',
       headers: {
+        Accept: 'application/json',
         'Content-Type': 'application/json'
       },
-
-      body: body === undefined
-        ? undefined
-        : JSON.stringify(body)
+      body: options.body
+        ? JSON.stringify(options.body)
+        : undefined
     }
   );
 
@@ -29,34 +22,28 @@ async function salamaLocalRequest(
   try {
     data = await response.json();
   } catch (_) {
-    // Ignore empty response bodies.
+    // Ignore empty responses.
   }
 
   if (!response.ok) {
     throw new Error(
       data?.error ||
-      `Salama integration failed (${response.status}).`
+      `Shamba Direct request failed (${response.status}).`
     );
   }
 
   return data;
 }
 
-
-// Retrieve Salama support resources.
-export function getSalamaResources({
+// Get synchronized support resources.
+export async function getSalamaResources({
   county = '',
   type = ''
 } = {}) {
   const params = new URLSearchParams();
 
-  if (county) {
-    params.set('county', county);
-  }
-
-  if (type) {
-    params.set('type', type);
-  }
+  if (county) params.set('county', county);
+  if (type) params.set('type', type);
 
   const query = params.toString();
 
@@ -65,11 +52,10 @@ export function getSalamaResources({
   );
 }
 
-
-// Submit an economic-abuse report.
-export function submitEconomicAbuseReport(payload) {
+// Submit a consumer protection report.
+export function submitConsumerProtectionReport(payload) {
   return salamaLocalRequest(
-    '/incidents',
+    '/consumer-reports',
     {
       method: 'POST',
       body: payload

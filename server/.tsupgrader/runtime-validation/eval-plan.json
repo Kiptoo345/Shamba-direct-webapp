@@ -1,0 +1,26 @@
+{
+  "generatedAt": "2026-11-10T11:24:19.100+03:00",
+  "generatedOnPlatform": "win32",
+  "projectType": "server",
+  "assertions": [
+    {
+      "name": "server-health-200",
+      "kind": "http-probe",
+      "startCommand": "npm",
+      "startArgs": ["start"],
+      "url": "http://localhost:5000/",
+      "verificationMethod": "http-status",
+      "expected": "200",
+      "timeoutSeconds": 60
+    },
+    {
+      "name": "tests-pass",
+      "kind": "process",
+      "command": "npm",
+      "args": ["test"],
+      "verificationMethod": "test-results",
+      "expected": "0",
+      "timeoutSeconds": 300
+    }
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "generatedAt": "2026-11-15T23:09:12.788+03:00",
+  "generatedOnPlatform": "win32",
+  "projectType": "webapp",
+  "setup": [
+    {
+      "command": "npm",
+      "args": [
+        "ci"
+      ],
+      "timeoutSeconds": 600
+    }
+  ],
+  "assertions": [
+    {
+      "name": "client-build",
+      "kind": "process",
+      "command": "npm",
+      "args": [
+        "run",
+        "build"
+      ],
+      "verificationMethod": "exit-code",
+      "expected": "0",
+      "timeoutSeconds": 300
+    },
+    {
+      "name": "tests-pass",
+      "kind": "process",
+      "command": "npm",
+      "args": [
+        "test",
+        "--",
+        "--watchAll=false",
+        "--runInBand"
+      ],
+      "verificationMethod": "test-results",
+      "expected": "0",
+      "timeoutSeconds": 300
+    },
+    {
+      "name": "protection-page-lint",
+      "kind": "process",
+      "command": "npx",
+      "args": [
+        "eslint",
+        "src/pages/FarmersProtection.jsx",
+        "src/App.test.js"
+      ],
+      "verificationMethod": "exit-code",
+      "expected": "0",
+      "timeoutSeconds": 120
+    },
+    {
+      "name": "client-entry-point-responds",
+      "kind": "http-probe",
+      "startCommand": "npm",
+      "startArgs": [
+        "start"
+      ],
+      "env": {
+        "BROWSER": "none",
+        "PORT": "3100"
+      },
+      "url": "http://localhost:3100/",
+      "verificationMethod": "http-status",
+      "expected": "200",
+      "timeoutSeconds": 120
+    }
+  ]
+}

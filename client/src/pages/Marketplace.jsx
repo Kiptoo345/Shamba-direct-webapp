@@ -17,6 +17,7 @@ function Marketplace() {
   const [search, setSearch] = useState('');
   const [countyFilter, setCountyFilter] = useState('All');
   const [minQuantity, setMinQuantity] = useState('Any');
+  const [verifiedOnly, setVerifiedOnly] = useState(false);
   const [sortBy, setSortBy] = useState('newest');
 
   const [enquiryTarget, setEnquiryTarget] = useState(null); // listing being contacted
@@ -55,12 +56,15 @@ function Marketplace() {
       const threshold = parseInt(minQuantity, 10);
       result = result.filter((l) => Number(l.quantity_kg) >= threshold);
     }
+    if (verifiedOnly) {
+      result = result.filter((l) => l.farmer_verified);
+    }
     if (sortBy === 'price-asc') result.sort((a, b) => a.price_per_kg - b.price_per_kg);
     else if (sortBy === 'price-desc') result.sort((a, b) => b.price_per_kg - a.price_per_kg);
     else if (sortBy === 'quantity-desc') result.sort((a, b) => b.quantity_kg - a.quantity_kg);
     else result.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
     return result;
-  }, [listings, search, countyFilter, minQuantity, sortBy]);
+  }, [listings, search, countyFilter, minQuantity, verifiedOnly, sortBy]);
 
   // Contacting a farmer, like placing an order, is only available to
   // logged-in accounts — guests are shown a prompt to log in / register
@@ -125,7 +129,8 @@ function Marketplace() {
       <div className="mp-header">
         <div className="container">
           <h1>Kenya's Fresh Produce Marketplace</h1>
-          <p>Browse verified listings from farmers across all 47 counties. Filter by crop, county, and quantity.</p>
+          <p>Search current produce listings by crop, farmer, or county, then filter and sort the results.</p>
+          <p>Need help with orders or verification? <Link to="/how-it-works#faqs" style={{ color: 'var(--gold)', fontWeight: 700 }}>Read the FAQs →</Link></p>
           <div className="mp-search-bar">
             <input
               type="text"
@@ -171,7 +176,10 @@ function Marketplace() {
           </div>
           <div className="filter-group">
             <div className="filter-group-title">Verified Only</div>
-            <label className="filter-option"><input type="checkbox" checked readOnly /> ✅ Showing verified farmers only</label>
+            <label className="filter-option">
+              <input type="checkbox" checked={verifiedOnly} onChange={(e) => setVerifiedOnly(e.target.checked)} />
+              Verified farmers only
+            </label>
           </div>
         </aside>
 

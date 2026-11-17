@@ -33,6 +33,23 @@
   font-size: 0.95rem; 
 }
 
+.dash-verification-dot {
+  display: inline-block;
+  width: 0.65rem;
+  height: 0.65rem;
+  margin-left: 0.5rem;
+  border-radius: 50%;
+  vertical-align: middle;
+}
+
+.dash-verification-dot.verified {
+  background: #299c59;
+}
+
+.dash-verification-dot.unverified {
+  background: #B7700D;
+}
+
 .dash-user-role { 
   color: rgba(255,255,255,0.6); 
   font-size: 0.78rem; 
@@ -114,6 +131,127 @@
   color: var(--green); 
   font-weight: 600; 
   margin-top: 0.2rem; 
+}
+
+.dash-order-tracking {
+  margin-bottom: 1.5rem;
+}
+
+.dash-order-tracking .dash-table-title h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.dash-order-list {
+  display: grid;
+  gap: 1rem;
+}
+
+.dash-order-card {
+  padding: 1rem;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: #fbfcfa;
+}
+
+.dash-order-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 1rem;
+}
+
+.dash-order-number {
+  color: var(--text-muted);
+  font-size: 0.73rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.dash-order-header h4 {
+  margin: 0.5rem 0;
+}
+
+.dash-order-status {
+  text-transform: capitalize;
+}
+
+.dash-order-status.status-cancelled {
+  background: #ffe9e9;
+  color: #a32424;
+}
+
+.dash-order-details {
+  display: flex;
+  gap: 1.5rem;
+  flex-wrap: wrap;
+  margin: 0.5rem 0 1rem;
+  color: var(--text-muted);
+  font-size: 0.85rem;
+}
+
+.dash-order-progress {
+  display: flex;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 1rem 0 0;
+  padding: 0;
+  list-style: none;
+}
+
+.dash-order-progress li {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--text-muted);
+  font-size: 0.78rem;
+  text-align: center;
+}
+
+.dash-order-step-number {
+  display: flex;
+  width: 30px;
+  height: 30px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  background: #e7ece8;
+  font-weight: 800;
+}
+
+.dash-order-progress li.completed {
+  color: var(--green-dark);
+  font-weight: 700;
+}
+
+.dash-order-progress li.completed .dash-order-step-number {
+  background: var(--green);
+  color: #fff;
+}
+
+.dash-order-cancelled {
+  color: #a32424;
+  font-weight: 700;
+}
+
+.dash-order-toggle {
+  display: block;
+  margin: 1rem auto 0;
+  padding: 0.65rem 1rem;
+  border: 1px solid var(--green);
+  border-radius: 8px;
+  background: #fff;
+  color: var(--green-dark);
+  font: inherit;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.dash-order-toggle:focus-visible {
+  outline: 3px solid #8bc69e;
+  outline-offset: 3px;
 }
 
 .dash-table-card { 
@@ -199,5 +337,15 @@
   }
   .dash-metrics { 
     grid-template-columns: 1fr 1fr; 
+  }
+}
+
+@media (max-width: 600px) {
+  .dash-order-header {
+    flex-direction: column;
+  }
+
+  .dash-order-progress li {
+    font-size: 0.68rem;
   }
 }

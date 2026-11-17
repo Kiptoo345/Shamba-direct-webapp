@@ -1,0 +1,27 @@
+{
+  "planHash": "d30bae728a25157f5e7622b49b046446916662cedc70f0265f71f655e9b4c052",
+  "phase": "standalone",
+  "recordedAtUtc": "2026-11-15T23:38:45.3966451Z",
+  "retryCount": 0,
+  "resetBaseline": false,
+  "complete": true,
+  "result": {
+    "setupSucceeded": false,
+    "setupDurationMs": 10285,
+    "setupFailureOutput": "setup step 0 \u0027npm\u0027 failed (exit=-4051, timedOut=False)\r\nnpm error code ENOTEMPTY\r\nnpm error syscall rmdir\r\nnpm error path C:\\Users\\kiman\\OneDrive\\Desktop\\Shamba-direct-webapp\\client\\node_modules\\.cache\\babel-loader\r\nnpm error errno -4051\r\nnpm error ENOTEMPTY: directory not empty, rmdir \u0027C:\\Users\\kiman\\OneDrive\\Desktop\\Shamba-direct-webapp\\client\\node_modules\\.cache\\babel-loader\u0027\r\nnpm error A complete log of this run can be found in: C:\\Users\\kiman\\AppData\\Local\\npm-cache\\_logs\\2026-11-15T23_38_35_656Z-debug-0.log\r\n",
+    "assertions": [],
+    "executions": [
+      {
+        "source": "setup[0]",
+        "resolvedExecutable": "C:\\Program Files\\nodejs\\npm.CMD",
+        "args": [
+          "ci"
+        ],
+        "cwd": "C:\\Users\\kiman\\OneDrive\\Desktop\\Shamba-direct-webapp\\client",
+        "env": {},
+        "prependPath": [],
+        "platform": "win32"
+      }
+    ]
+  }
+}
