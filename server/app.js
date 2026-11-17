@@ -16,68 +16,68 @@ app.use(express.json());
 
 // Keep body validation errors JSON shaped for requests without a JSON body.
 app.use((req, res, next) => {
-  if (req.body === undefined) req.body = {};
-  next();
+	if (req.body === undefined) req.body = {};
+	next();
 });
 
 // v2 response shape. Registered before auth so 401/403/429 are v2-shaped too.
 app.use('/api/v2', v2Envelope);
 
 app.use('/api', (req, res, next) => {
-  const apiKeys = Object.entries(process.env)
-    .filter(([name, value]) => /^API_KEY_[A-Z0-9_]+$/.test(name) && value)
-    .map(([name, value]) => ({ consumer: name.slice('API_KEY_'.length), value }));
-  const providedKey = Buffer.from(req.get('X-API-Key') || '');
-  const matchedKey = apiKeys.find(({ value }) => {
-    const expectedKey = Buffer.from(value);
-    return providedKey.length === expectedKey.length
-      && timingSafeEqual(providedKey, expectedKey);
-  });
+	const apiKeys = Object.entries(process.env)
+		.filter(([name, value]) => /^API_KEY_[A-Z0-9_]+$/.test(name) && value)
+		.map(([name, value]) => ({ consumer: name.slice('API_KEY_'.length), value }));
+	const providedKey = Buffer.from(req.get('X-API-Key') || '');
+	const matchedKey = apiKeys.find(({ value }) => {
+		const expectedKey = Buffer.from(value);
+		return providedKey.length === expectedKey.length
+			&& timingSafeEqual(providedKey, expectedKey);
+	});
 
-  if (!matchedKey) {
-    return res.status(401).json({ error: 'A valid X-API-Key header is required' });
-  }
+	if (!matchedKey) {
+		return res.status(401).json({ error: 'A valid X-API-Key header is required' });
+	}
 
-  // /api/v1/listings and /api/v2/listings follow the same access rules.
-  const routePath = req.path.replace(/^\/v\d+(?=\/|$)/, '');
-  const partnerReadOnlyRoutes = [
-    /^\/listings(?:\/\d+)?$/,
-    /^\/market-prices$/,
-    /^\/farmers\/ratings$/,
-    /^\/farmers\/\d+\/rating$/,
-    /^\/headquarters(?:\/\d+)?$/
-  ];
-  if (matchedKey.consumer === 'RING_PARTNER'
-    && (req.method !== 'GET' || !partnerReadOnlyRoutes.some((route) => route.test(routePath)))) {
-    return res.status(403).json({ error: 'This API key is read-only and limited to partner data' });
-  }
+	// /api/v1/listings and /api/v2/listings follow the same access rules.
+	const routePath = req.path.replace(/^\/v\d+(?=\/|$)/, '');
+	const partnerReadOnlyRoutes = [
+		/^\/listings(?:\/\d+)?$/,
+		/^\/market-prices$/,
+		/^\/farmers\/ratings$/,
+		/^\/farmers\/\d+\/rating$/,
+		/^\/headquarters(?:\/\d+)?$/
+	];
+	if (matchedKey.consumer === 'RING_PARTNER'
+		&& (req.method !== 'GET' || !partnerReadOnlyRoutes.some((route) => route.test(routePath)))) {
+		return res.status(403).json({ error: 'This API key is read-only and limited to partner data' });
+	}
 
-  const limit = Number(process.env.API_RATE_LIMIT_MAX || 100);
-  if (!Number.isInteger(limit) || limit < 1) {
-    console.error('API_RATE_LIMIT_MAX must be a positive integer');
-    return res.status(500).json({ error: 'API rate limit configuration is invalid' });
-  }
+	const limit = Number(process.env.API_RATE_LIMIT_MAX || 100);
+	if (!Number.isInteger(limit) || limit < 1) {
+		console.error('API_RATE_LIMIT_MAX must be a positive integer');
+		return res.status(500).json({ error: 'API rate limit configuration is invalid' });
+	}
 
-  const now = Date.now();
-  const existingBucket = rateLimitBuckets.get(matchedKey.consumer);
-  const bucket = !existingBucket || existingBucket.resetAt <= now
-    ? { count: 0, resetAt: now + RATE_LIMIT_WINDOW_MS }
-    : existingBucket;
+	const now = Date.now();
+	const existingBucket = rateLimitBuckets.get(matchedKey.consumer);
+	const bucket = !existingBucket || existingBucket.resetAt <= now
+		? { count: 0, resetAt: now + RATE_LIMIT_WINDOW_MS }
+		: existingBucket;
 
-  if (bucket.count >= limit) {
-    const retryAfter = Math.max(1, Math.ceil((bucket.resetAt - now) / 1000));
-    res.set('Retry-After', String(retryAfter));
-    return res.status(429).json({ error: 'Rate limit exceeded', retryAfter });
-  }
+	if (bucket.count >= limit) {
+		const retryAfter = Math.max(1, Math.ceil((bucket.resetAt - now) / 1000));
+		res.set('Retry-After', String(retryAfter));
+		return res.status(429).json({ error: 'Rate limit exceeded', retryAfter });
+	}
 
-  bucket.count += 1;
-  rateLimitBuckets.set(matchedKey.consumer, bucket);
-  next();
+	bucket.count += 1;
+	rateLimitBuckets.set(matchedKey.consumer, bucket);
+	next();
 });
 
 // Health Check Route
 app.get('/', (req, res) => {
-  res.send('Shamba Direct API is running...');
+	res.send('Shamba Direct API is running...');
 });
 
 // Routes
@@ -95,18 +95,18 @@ const salamaRoutes = require('./routes/salama');
 // The same handlers serve every API version; versions differ only in
 // middleware (headers for v1, response envelope for v2).
 function buildApiRouter() {
-  const router = express.Router();
-  router.use('/auth', authRoutes);
-  router.use('/products', productRoutes);
-  router.use('/listings', productRoutes);
-  router.use('/orders', orderRoutes);
-  router.use('/enquiries', enquiryRoutes);
-  router.use('/contact', contactRoutes);
-  router.use('/ratings', ratingRoutes);
-  router.use('/headquarters', headquartersRoutes);
-  router.use('/market-prices', marketPriceRoutes);
-  router.use('/farmers', farmerRoutes);
-  return router;
+	const router = express.Router();
+	router.use('/auth', authRoutes);
+	router.use('/products', productRoutes);
+	router.use('/listings', productRoutes);
+	router.use('/orders', orderRoutes);
+	router.use('/enquiries', enquiryRoutes);
+	router.use('/contact', contactRoutes);
+	router.use('/ratings', ratingRoutes);
+	router.use('/headquarters', headquartersRoutes);
+	router.use('/market-prices', marketPriceRoutes);
+	router.use('/farmers', farmerRoutes);
+	return router;
 }
 
 // v2: current version.
@@ -120,38 +120,41 @@ app.use('/api/v1', deprecateV1, buildApiRouter());
 // Salama integration is not versioned.
 app.use('/api/salama', salamaRoutes);
 
+//logger request
+app.use('/api', logger.requestLogger);
+
 // Legacy unversioned paths (/api/listings) behave as v1 and are deprecated.
 app.use('/api', (req, res, next) => {
-  if (/^\/(salama|test-db)(?=\/|$)/.test(req.path)) return next();
-  return deprecateV1(req, res, next);
+	if (/^\/(salama|test-db)(?=\/|$)/.test(req.path)) return next();
+	return deprecateV1(req, res, next);
 }, buildApiRouter());
 
 // Test Database Connection Route
 app.get('/api/test-db', async (req, res) => {
-  try {
-    const [rows] = await db.query('SELECT 1 + 1 AS result');
-    res.json({ message: 'Database connected successfully!', data: rows });
-  } catch (error) {
-    console.error('Database connection error:', error.message);
-    res.status(500).json({ error: 'Database connection failed' });
-  }
+	try {
+		const [rows] = await db.query('SELECT 1 + 1 AS result');
+		res.json({ message: 'Database connected successfully!', data: rows });
+	} catch (error) {
+		console.error('Database connection error:', error.message);
+		res.status(500).json({ error: 'Database connection failed' });
+	}
 });
 
 // Unknown route
 app.use((req, res) => {
-  res.status(404).json({ error: 'Route not found' });
+	res.status(404).json({ error: 'Route not found' });
 });
 
 // eslint-disable-next-line no-unused-vars
 app.use((err, req, res, next) => {
-  if (err.type === 'entity.parse.failed') {
-    return res.status(400).json({ error: 'Request body is not valid JSON' });
-  }
-  if (err.type === 'entity.too.large') {
-    return res.status(413).json({ error: 'Request body is too large' });
-  }
-  console.error('Unhandled error:', err);
-  res.status(500).json({ error: 'Internal server error' });
+	if (err.type === 'entity.parse.failed') {
+		return res.status(400).json({ error: 'Request body is not valid JSON' });
+	}
+	if (err.type === 'entity.too.large') {
+		return res.status(413).json({ error: 'Request body is too large' });
+	}
+	console.error('Unhandled error:', err);
+	res.status(500).json({ error: 'Internal server error' });
 });
 
 // NOTE: no app.listen() here on purpose. This file only builds and exports
